@@ -63,28 +63,29 @@ GRANT SELECT ON public.tickets TO anon, authenticated, service_role;
 -- ─── dim_plaza (mapea estacionamientos + cfg_estacionamiento) ────────────────
 CREATE OR REPLACE VIEW public.dim_plaza AS
 SELECT
-  est.estacionamiento_id AS plaza_id,
-  est.codigo             AS plaza_codigo,
-  est.nombre             AS plaza_nombre,
+  est.estacionamiento_id     AS plaza_id,
+  est.codigo                 AS plaza_codigo,
+  est.nombre                 AS plaza_nombre,
   est.capacidad_total,
-  cfg.timezone,
+  tz.codigo                  AS timezone,
   cfg.hora_apertura,
-  cfg.hora_relevo_1,
-  cfg.hora_relevo_2,
+  NULL::time                 AS hora_relevo_1,
+  NULL::time                 AS hora_relevo_2,
   cfg.hora_cierre,
-  cfg.url_facturacion,
+  cfg.contacto_web           AS url_facturacion,
   cfg.promociones_habilitado,
-  cfg.pension_habilitada,
-  cfg.monedero_habilitado,
+  false                      AS pension_habilitada,
+  cfg.onlywallet_habilitado  AS monedero_habilitado,
   cfg.lpr_habilitado,
-  cfg.tolerancia_salida_min,
-  cfg.formato_folio,
-  cfg.moneda_id,
-  cfg.pin_operativo_hash,
+  cfg.minutos_tolerancia_salida AS tolerancia_salida_min,
+  cfg.formato_folio_entrada  AS formato_folio,
+  NULL::uuid                 AS moneda_id,
+  NULL::text                 AS pin_operativo_hash,
   est.sucursal_id,
   est.activo
 FROM public.estacionamientos est
-LEFT JOIN public.cfg_estacionamiento cfg USING (estacionamiento_id);
+LEFT JOIN public.cfg_estacionamiento cfg USING (estacionamiento_id)
+LEFT JOIN public.cat_timezone tz ON tz.timezone_id = est.timezone_id;
 
 GRANT SELECT ON public.dim_plaza TO anon, authenticated, service_role;
 
@@ -95,22 +96,20 @@ SELECT
   c.corte_caja_id           AS turno_id,
   c.corte_caja_id           AS corte_id,
   c.estacionamiento_id      AS plaza_id,
-  c.perfil_id               AS cajero_id,
+  c.cajero_id               AS cajero_id,
+  c.cajero_relevo_id        AS cajero_relevo,
   t.codigo                  AS turno_codigo,
-  c.abierto_at              AS hora_apertura,
-  c.cerrado_at              AS hora_cierre,
+  c.tipo                    AS tipo,
+  c.inicio_at               AS hora_apertura,
+  c.fin_at                  AS hora_cierre,
   c.fondo_inicial,
-  c.efectivo_final,
-  c.total_entradas,
-  c.total_cobros,
-  c.total_cortesias,
-  c.total_pensiones,
-  c.total_perdidos,
-  c.diferencia,
+  c.total_cobrado           AS efectivo_final,
+  c.total_cobrado,
+  c.total_entregado,
+  c.estado,
   c.notas,
-  c.abierto_at::date        AS fecha_op,
-  c.created_at,
-  c.updated_at
+  c.inicio_at::date         AS fecha_op,
+  c.created_at
 FROM public.cortes_caja c
 LEFT JOIN public.cat_turno t ON t.turno_id = c.turno_id;
 
@@ -120,7 +119,7 @@ GRANT SELECT ON public.cortes TO anon, authenticated, service_role;
 -- ─── bitacora (mapea log_evento) ─────────────────────────────────────────────
 CREATE OR REPLACE VIEW public.bitacora AS
 SELECT
-  l.log_evento_id          AS bitacora_id,
+  l.log_id                 AS bitacora_id,
   tb.codigo                AS tipo,
   l.subtipo,
   l.estacionamiento_id     AS plaza_id,
@@ -128,8 +127,11 @@ SELECT
   l.sesion_id              AS ticket_id,
   l.descripcion,
   l.payload,
-  l.creado_at              AS created_at,
-  l.creado_at              AS hora
+  l.ip,
+  l.user_agent,
+  l.ruta,
+  l.ocurrido_at            AS created_at,
+  l.ocurrido_at            AS hora
 FROM public.log_evento l
 LEFT JOIN public.cat_tipo_bitacora tb ON tb.tipo_bitacora_id = l.tipo_bitacora_id;
 
