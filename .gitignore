@@ -1,0 +1,34 @@
+# Node / build
+node_modules/
+dist/
+build/
+.cache/
+
+# Env / secretos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+credenciales/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Netlify
+.netlify/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Scratch local
+scratch/
+tmp/
