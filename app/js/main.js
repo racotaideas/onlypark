@@ -1,20 +1,25 @@
 // Punto de entrada de la PWA.
-import { supabase, getSession } from './supabase.js';
-import { renderLogin }     from './views/login.js';
-import { renderHome }      from './views/home.js';
-import { renderCatalogos } from './views/catalogos.js';
-import { renderNotFound }  from './views/notfound.js';
+import { supabase } from './supabase.js';
+import { renderLogin }     from './views/login.js?v=3';
+import { renderHome }      from './views/home.js?v=3';
+import { renderCatalogos } from './views/catalogos.js?v=3';
+import { renderNotFound }  from './views/notfound.js?v=3';
 
 const app = document.getElementById('app');
 
+// DEV: unica gate = nombre en localStorage. Sesion Supabase es best-effort.
+function isAuthed() {
+  return !!localStorage.getItem('op_actor');
+}
+
 async function router() {
   const path = window.location.hash.replace(/^#/, '') || '/';
-  const session = await getSession();
-  if (!session && path !== '/login') {
+  const authed = isAuthed();
+  if (!authed && path !== '/login') {
     window.location.hash = '/login';
     return;
   }
-  if (session && (path === '/' || path === '/login')) {
+  if (authed && (path === '/' || path === '/login')) {
     return renderHome(app);
   }
   if (path.startsWith('/catalogos')) {
@@ -29,7 +34,8 @@ async function router() {
 }
 
 window.addEventListener('hashchange', router);
-window.addEventListener('load', router);
+// Ejecuta ya (main.js es tipo module, puede cargar despues del evento load)
+router();
 
 // Cambios de sesión → reroutear
 supabase.auth.onAuthStateChange((_ev, _session) => router());

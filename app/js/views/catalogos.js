@@ -52,7 +52,13 @@ function shellHtml(active) {
         <a href="#/" class="w-8 h-8 rounded-md bg-barrera flex items-center justify-center font-bold">P</a>
         <span class="font-semibold tracking-wide">ONLYPARK / Catálogos</span>
       </div>
-      <button id="op-logout" class="text-sm underline">Salir</button>
+      <div class="flex items-center gap-4">
+        <div class="text-right leading-tight">
+          <div class="text-xs text-white/60">Operando como</div>
+          <div class="text-sm font-medium">${(localStorage.getItem('op_actor') || 'operador')}</div>
+        </div>
+        <button id="op-logout" class="bg-white/10 hover:bg-white/20 text-sm rounded-md px-3 py-1.5 transition">Salir</button>
+      </div>
     </header>
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full">
       <nav class="flex gap-1 mb-4 border-b pb-2">${tabsHtml}</nav>
@@ -64,6 +70,7 @@ function bindLogout(root) {
   const btn = root.querySelector('#op-logout');
   if (btn) btn.addEventListener('click', async () => {
     const { supabase } = await import('../supabase.js');
+    localStorage.removeItem('op_actor');
     await supabase.auth.signOut();
     window.location.hash = '/login';
   });
