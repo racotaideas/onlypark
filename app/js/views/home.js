@@ -27,7 +27,8 @@ export async function renderHome(root) {
           <h1 class="text-2xl font-bold text-marino">Bienvenido, ${actor}</h1>
           <p class="text-slate-500 text-sm">Elige un módulo para comenzar.</p>
         </div>
-        <nav class="flex gap-2">
+        <nav class="flex gap-2 flex-wrap">
+          <a href="/portales/index.html" class="op-btn-primary text-sm">Portales operativos</a>
           <a href="#/catalogos/grupos" class="op-btn-primary text-sm">Catálogos</a>
         </nav>
       </div>

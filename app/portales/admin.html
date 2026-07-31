@@ -1,0 +1,3576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONLYPARK · Dashboard Admin</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ONLYPARK Admin">
+<meta name="theme-color" content="#0d2340">
+<link rel="manifest" href="manifest_admin.json">
+<style>
+:root {
+  --bg:      #F5F5F7;
+  --white:   #FFFFFF;
+  --border:  #D2D2D7;
+  --accent:  #0d2340;
+  --accent2: #0d2340;
+  --green:   #3aa757;
+  --red:     #D93025;
+  --gold:    #F5A623;
+  --text:    #1D1D1F;
+  --muted:   #6E6E73;
+  --card-sh: 0 2px 12px rgba(0,0,0,.08);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg);
+       color:var(--text); min-height:100vh; }
+
+/* NAV */
+nav { background:#fff; border-bottom:1px solid var(--border);
+      padding:0 24px; height:52px; display:flex; align-items:center;
+      gap:12px; position:sticky; top:0; z-index:100;
+      box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.nav-logo { height:28px; }
+.nav-title { font-size:15px; font-weight:800; color:var(--text); }
+.nav-badge { font-size:10px; font-weight:700; background:var(--accent);
+             color:#fff; border-radius:4px; padding:2px 8px; }
+.nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
+.nav-plaza { font-size:13px; font-weight:700; color:var(--accent); }
+.nav-clock { font-size:12px; color:var(--muted); font-family:monospace; }
+.btn-refresh { background:var(--accent); color:#fff; border:none;
+               border-radius:8px; padding:7px 16px; font-size:12px;
+               font-weight:700; cursor:pointer; }
+
+/* MENÚ ADMIN */
+.nav-menu-wrap { position:relative; }
+.nav-menu-list { display:none; position:absolute; top:calc(100% + 6px); right:0;
+  background:#fff; border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.15); min-width:220px; padding:6px; z-index:200; }
+.nav-menu-list.open { display:block; }
+.nav-menu-item { display:flex; align-items:center; gap:10px; width:100%;
+  background:none; border:none; text-align:left; padding:10px 12px;
+  border-radius:7px; font-size:13px; font-weight:600; color:var(--text);
+  cursor:pointer; text-decoration:none; }
+.nav-menu-item:hover { background:var(--bg); }
+.nav-menu-sep { height:1px; background:var(--border); margin:6px 4px; }
+
+/* TABS */
+.tabs { background:#fff; border-bottom:2px solid var(--border);
+        display:flex; padding:0 24px; gap:0; }
+.tab { padding:14px 20px; font-size:13px; font-weight:600; color:var(--muted);
+       cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px;
+       transition:all .15s; }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab:hover { color:var(--text); }
+.tab-section { display:none; }
+.tab-section.active { display:block; }
+
+/* LAYOUT */
+.container { max-width:1400px; margin:0 auto; padding:10px 20px; }
+
+/* FILTROS */
+.filtros { display:flex; gap:10px; align-items:center; margin-bottom:10px;
+           flex-wrap:wrap; }
+.filtros label { font-size:12px; font-weight:700; color:var(--muted);
+                 text-transform:uppercase; letter-spacing:.5px; }
+.filtros select, .filtros input[type=date] {
+  border:1.5px solid var(--border); border-radius:8px;
+  padding:7px 12px; font-size:13px; background:#fff;
+  color:var(--text); cursor:pointer; }
+.filtros select:focus, .filtros input:focus {
+  outline:none; border-color:var(--accent); }
+.btn-filtro { background:var(--accent); color:#fff; border:none;
+              border-radius:8px; padding:8px 18px; font-size:13px;
+              font-weight:700; cursor:pointer; }
+
+/* KPI CARDS */
+.kpi-grid { display:grid; grid-template-columns:repeat(6,1fr);
+            gap:10px; margin-bottom:10px; }
+@media (max-width:1100px) { .kpi-grid { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:600px)  { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+.kpi-card { background:var(--white); border-radius:10px;
+            border:1px solid var(--border); padding:10px 12px;
+            box-shadow:var(--card-sh); cursor:pointer;
+            transition:transform .15s, box-shadow .15s; position:relative; }
+.kpi-card:hover { transform:translateY(-2px);
+                  box-shadow:0 6px 20px rgba(0,0,0,.12); }
+.kpi-card.selected { border-color:var(--accent); border-width:2px; }
+.kpi-label { font-size:10px; font-weight:700; color:var(--muted);
+             text-transform:uppercase; letter-spacing:.6px; margin-bottom:3px; }
+.kpi-value { font-size:22px; font-weight:900; line-height:1; margin-bottom:2px; }
+.kpi-sub   { font-size:10px; color:var(--muted); }
+.kpi-delta { position:absolute; top:10px; right:10px; font-size:10px;
+             font-weight:700; padding:2px 6px; border-radius:4px; }
+.delta-up   { background:#DCFCE7; color:#16A34A; }
+.delta-down { background:#FEE2E2; color:#DC2626; }
+
+/* CHARTS GRID */
+.charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px;
+               margin-bottom:10px; }
+@media (max-width:900px) { .charts-grid { grid-template-columns:1fr; } }
+.chart-card { background:var(--white); border-radius:10px;
+              border:1px solid var(--border); padding:12px;
+              box-shadow:var(--card-sh); }
+.chart-title { font-size:12px; font-weight:800; margin-bottom:2px;
+               color:var(--text); }
+.chart-sub   { font-size:10px; color:var(--muted); margin-bottom:6px; }
+
+/* DRILL-DOWN: ventana pop (overlay fijo, no requiere recorrer la pantalla) */
+.drill-panel { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+               z-index:1000; align-items:center; justify-content:center; padding:20px; }
+.drill-panel.open { display:flex; }
+.drill-box { background:var(--white); border-radius:12px; border:2px solid var(--accent);
+             padding:20px; box-shadow:0 20px 60px rgba(0,0,0,.3);
+             max-width:900px; width:100%; max-height:85vh; overflow-y:auto; }
+.drill-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+.drill-back { background:var(--accent); color:#fff; border:none;
+              border-radius:6px; padding:6px 14px; font-size:12px;
+              font-weight:700; cursor:pointer; }
+
+/* MODAL PARÁMETROS */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+                  z-index:1000; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:var(--white); border-radius:14px; max-width:720px; width:100%;
+             max-height:88vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+.modal-head { display:flex; align-items:center; gap:10px; padding:18px 22px;
+              border-bottom:1px solid var(--border); position:sticky; top:0;
+              background:var(--white); border-radius:14px 14px 0 0; }
+.modal-title { font-size:16px; font-weight:900; }
+.modal-close { margin-left:auto; background:none; border:none; font-size:20px;
+               color:var(--muted); cursor:pointer; line-height:1; }
+.modal-body { padding:20px 22px; display:flex; flex-direction:column; gap:20px; }
+.param-card { border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+.param-card h3 { font-size:12px; font-weight:800; text-transform:uppercase;
+                  letter-spacing:.5px; color:var(--muted); margin-bottom:10px; }
+.param-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.param-row input, .param-row select { border:1.5px solid var(--border); border-radius:8px;
+              padding:8px 12px; font-size:13px; flex:1; min-width:140px; }
+.param-btn { background:var(--accent); color:#fff; border:none; border-radius:8px;
+             padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.param-btn.outline { background:#fff; color:var(--accent); border:1.5px solid var(--accent); }
+.param-card.proximamente { opacity:.6; background:#FAFAFA; }
+.param-tag { display:inline-block; font-size:10px; font-weight:700; background:#eaeef4;
+             color:var(--accent); border-radius:99px; padding:3px 10px; margin-left:8px; }
+.cajero-list-row { display:flex; align-items:center; gap:10px; padding:8px 0;
+                    border-bottom:1px solid #eaeef4; font-size:13px; }
+.cajero-list-row .rol-badge { font-size:10px; font-weight:700; padding:2px 8px;
+                                border-radius:99px; background:#e6f2eb; color:var(--accent2); }
+.cajero-list-row .estado-inactivo { color:var(--red); font-size:11px; font-weight:700; }
+.drill-title { font-size:14px; font-weight:800; color:var(--accent); }
+.drill-path  { font-size:11px; color:var(--muted); margin-left:auto; }
+
+/* TABLA DETALLE */
+.tabla-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { background:#f0f4f9; padding:10px 14px; text-align:left;
+     font-size:11px; font-weight:700; color:var(--muted);
+     text-transform:uppercase; letter-spacing:.5px;
+     border-bottom:2px solid var(--border); }
+td { padding:10px 14px; border-bottom:1px solid #eaeef4; }
+tr:hover td { background:#FAFAFE; cursor:pointer; }
+.badge { display:inline-block; padding:2px 8px; border-radius:4px;
+         font-size:11px; font-weight:700; }
+.b-normal { background:#e6f2eb; color:#0d2340; }
+.b-pref   { background:#eef2f7; color:#0d2340; }
+.b-perdido{ background:#FEE2E2; color:#D93025; }
+.b-cortesia{background:#F5F5F5; color:#6E6E73; }
+
+/* OCUPACIÓN GAUGE */
+.ocupacion-wrap { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.gauge-num { text-align:center; }
+.gauge-pct { font-size:32px; font-weight:900; color:var(--accent); line-height:1; }
+.gauge-bar-wrap { flex:1; min-width:140px; }
+.gauge-bar-bg { background:#eaeef4; border-radius:99px; height:12px; overflow:hidden; }
+.gauge-bar-fill { height:100%; border-radius:99px;
+                  background:linear-gradient(90deg,var(--accent),var(--accent2));
+                  transition:width .6s ease; }
+.gauge-labels { display:flex; justify-content:space-between;
+                font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* FRANJA BARRAS */
+.franja-bars { display:flex; gap:8px; align-items:flex-end;
+               height:70px; padding-top:6px; }
+.franja-col { flex:1; display:flex; flex-direction:column;
+              align-items:center; gap:3px; }
+.franja-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
+.franja-bar { width:100%; border-radius:6px 6px 0 0;
+              transition:height .5s ease; cursor:pointer; }
+.franja-label { font-size:9px; color:var(--muted); font-weight:700;
+                text-align:center; }
+.franja-value { font-size:11px; font-weight:800; color:var(--text); }
+
+/* RANKING CAJEROS */
+.cajero-row { display:flex; align-items:center; gap:8px;
+              padding:5px 0; border-bottom:1px solid #eaeef4; }
+.cajero-num  { font-size:14px; font-weight:900; color:var(--accent);
+               min-width:20px; }
+.cajero-name { flex:1; font-size:11px; font-weight:700; }
+.cajero-bar  { flex:2; }
+.cajero-bar-bg { background:#eaeef4; border-radius:99px; height:6px; }
+.cajero-bar-fill { height:100%; border-radius:99px; background:var(--accent); }
+.cajero-val  { font-size:11px; font-weight:800; color:var(--gold);
+               min-width:70px; text-align:right; }
+
+/* TOAST */
+.toast { position:fixed; bottom:20px; right:20px; background:#1D1D1F;
+         color:#fff; border-radius:10px; padding:12px 18px;
+         font-size:13px; font-weight:600; z-index:9999;
+         transform:translateY(60px); opacity:0; transition:all .3s; }
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* LOGIN */
+#op-login-overlay { position:fixed; inset:0; background:#1D1D1F; z-index:999999;
+  display:flex; align-items:center; justify-content:center; }
+#op-login-overlay.hidden { display:none; }
+.op-login-box { background:#fff; border-radius:16px; padding:32px 28px; width:90%; max-width:340px;
+  box-shadow:0 20px 60px rgba(0,0,0,.4); text-align:center; }
+.op-login-box h2 { font-size:18px; font-weight:900; margin-bottom:4px; }
+.op-login-box p { font-size:12px; color:#6E6E73; margin-bottom:18px; }
+.op-login-box input { width:100%; border:1.5px solid #D2D2D7; border-radius:8px; padding:11px 12px;
+  font-size:14px; margin-bottom:10px; box-sizing:border-box; }
+.op-login-box button { width:100%; background:#0d2340; color:#fff; border:none; border-radius:8px;
+  padding:12px; font-size:14px; font-weight:700; cursor:pointer; }
+.op-login-error { color:#D93025; font-size:12px; margin-top:8px; min-height:16px; }
+
+/* IMPRIMIR / PDF — solo se ve la pestaña activa en pantalla (el resto ya
+   está display:none); aquí se oculta además todo lo que no aporta a un
+   reporte impreso (nav, botones, modales, toasts). */
+@media print {
+  nav, .tabs, .toast, .modal-overlay, .drill-panel, #op-login-overlay,
+  .nav-menu-list, button, .btn-refresh { display:none !important; }
+  body { background:#fff; }
+  .container { max-width:100%; padding:0; }
+  .card, .chart-card { box-shadow:none; border:1px solid #ccc; break-inside:avoid; }
+  .grid2, .grid3, .charts-grid { break-inside:avoid; }
+}
+</style>
+</head>
+<body>
+
+<div id="op-login-overlay" class="hidden">
+  <div class="op-login-box">
+    <h2>🔒 Iniciar sesión</h2>
+    <p>ONLYPARK · <span id="op-login-app-nombre"></span></p>
+    <input type="text" id="op-login-usuario" placeholder="Usuario" autocomplete="username">
+    <input type="password" id="op-login-password" placeholder="Contraseña" autocomplete="current-password">
+    <button onclick="opIntentarLogin()">Entrar</button>
+    <div class="op-login-error" id="op-login-error"></div>
+  </div>
+</div>
+
+<nav>
+  <span style="font-size:22px;font-weight:900;color:var(--accent)">·OP·</span>
+  <span class="nav-title">ONLYPARK</span>
+  <span class="nav-badge">ADMIN PLAZA</span>
+  <div class="nav-right">
+    <span id="nav-usuario" style="font-size:12px;color:var(--accent);font-weight:700"></span>
+    <span class="nav-plaza" id="nav-plaza">ONLYPARK</span>
+    <span class="nav-clock" id="nav-clock">--:--:--</span>
+    <span id="app-version" style="font-size:11px;color:var(--muted);margin-right:8px">v184</span>
+    <div class="nav-menu-wrap">
+      <button class="btn-refresh" style="background:var(--text)" onclick="toggleNavMenu(event)">☰ Menú</button>
+      <div class="nav-menu-list" id="nav-menu-list">
+        <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirParametros();">⚙ Parámetros del sistema</button>
+        <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirGestionManual();">✍️ Gestión manual de tickets</button>
+        <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirEditorHistoricoAdm();">📊 Captura histórico mensual</button>
+        <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirAvisoOperador();">💬 Chat con operadores <span id="badge-preguntas-pendientes" style="display:none;background:#D93025;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:800;margin-left:6px">0</span></button>
+        <a class="nav-menu-item" href="ONLYPARK_Promo_Admin.html" target="_blank">📢 Promociones</a>
+        <a class="nav-menu-item" href="ONLYPARK_Pensiones.html" target="_blank">🅿️ Pensiones</a>
+        <div class="nav-menu-sep"></div>
+        <a class="nav-menu-item" href="index.html">🏠 Portal principal</a>
+      </div>
+    </div>
+    <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
+    <button onclick="window.print()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--muted);cursor:pointer">🖨 Imprimir</button>
+    <button onclick="cerrarSesion()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--muted);cursor:pointer">Cerrar sesión</button>
+  </div>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTabModo('seguimiento',this)">📊 Seguimiento</div>
+  <div class="tab" onclick="showTabModo('historico',this)">📁 Histórico</div>
+  <div class="tab" onclick="showTab('movimientos',this)">🔎 Movimientos</div>
+  <div class="tab" onclick="showTab('cierre-admin',this)">⚠️ Cierre administrativo</div>
+  <div class="tab" onclick="showTab('bitacora',this)">📜 Bitácora</div>
+  <div class="tab" onclick="showTab('demanda',this)">📈 Demanda</div>
+</div>
+
+<div class="container">
+
+<div class="tab-section active" id="tab-dashboard">
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <span id="periodo-label" style="font-size:15px;font-weight:800;color:var(--accent);white-space:nowrap">Cargando…</span>
+    <span id="filtro-periodo-wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label>Período</label>
+      <select id="filtro-periodo" onchange="onFiltroCambio()">
+        <option value="hoy">Hoy</option>
+        <option value="lunes">Lunes</option>
+        <option value="martes">Martes</option>
+        <option value="miercoles">Miércoles</option>
+        <option value="jueves">Jueves</option>
+        <option value="viernes">Viernes</option>
+        <option value="sabado">Sábado</option>
+        <option value="domingo">Domingo</option>
+        <option value="semana">Esta semana</option>
+        <option value="semana_pasada">Semana pasada</option>
+        <option value="mes">Este mes</option>
+        <option value="custom">Personalizado</option>
+      </select>
+      <input type="date" id="filtro-desde" style="display:none">
+      <input type="date" id="filtro-hasta" style="display:none">
+    </span>
+    <button class="btn-filtro" onclick="cargarDatos()">Aplicar</button>
+    <span style="margin-left:auto;font-size:12px;color:var(--muted)"
+          id="ultima-actualizacion">Cargando...</span>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid" id="kpi-grid-main">
+    <div class="kpi-card" onclick="drillDown('ingresos')" title="Ver detalle">
+      <div class="kpi-label">Ingresos del día</div>
+      <div class="kpi-value" style="color:var(--gold)" id="kpi-ingresos">$0</div>
+      <div class="kpi-sub" id="kpi-ingresos-sub">0 operaciones</div>
+      <div class="kpi-delta delta-up" id="kpi-ingresos-delta">↑ vs ayer</div>
+    </div>
+    <div class="kpi-card" onclick="drillDown('tickets_dia')" title="Ver detalle">
+      <div class="kpi-label">Tickets del día</div>
+      <div class="kpi-value" style="color:var(--accent)" id="kpi-tickets-dia">0</div>
+      <div class="kpi-sub">total emitidos (abiertos + cerrados)</div>
+    </div>
+    <div class="kpi-card" id="kpi-card-autos" onclick="drillDown('ocupacion')" title="Ver detalle" style="background:linear-gradient(135deg,#eef2f7,#e6f2eb)">
+      <div class="kpi-label">Autos en plaza AHORA</div>
+      <div class="kpi-value" style="color:var(--accent);font-size:38px" id="kpi-ocupacion-num">0</div>
+      <div class="kpi-sub" id="kpi-ocupacion-sub">de 0 lugares</div>
+    </div>
+    <div class="kpi-card" onclick="drillDown('boletos_perdidos')" title="Ver detalle">
+      <div class="kpi-label">Boletos perdidos</div>
+      <div class="kpi-value" style="color:var(--red)" id="kpi-perdidos">0</div>
+      <div class="kpi-sub" id="kpi-perdidos-sub">$0 en penalizaciones</div>
+    </div>
+    <div class="kpi-card" onclick="drillDown('ticket_promedio')" title="Ver detalle">
+      <div class="kpi-label">Ticket promedio</div>
+      <div class="kpi-value" style="color:var(--green)" id="kpi-ticket">$0</div>
+      <div class="kpi-sub" id="kpi-ticket-sub">Tiempo prom: 0 min</div>
+    </div>
+    <div class="kpi-card" id="kpi-card-ocupacion-pct" onclick="drillDown('ocupacion')" title="Ver detalle">
+      <div class="kpi-label">Ocupación (%)</div>
+      <div class="kpi-value" style="color:var(--accent)" id="kpi-ocupacion">0%</div>
+      <div class="kpi-sub">del total de cajones</div>
+    </div>
+  </div>
+
+  <!-- DRILL-DOWN: ventana pop -->
+  <div class="drill-panel" id="drill-panel" onclick="if(event.target===this) cerrarDrill()">
+    <div class="drill-box">
+      <div class="drill-header">
+        <button class="drill-back" onclick="cerrarDrill()">← Volver</button>
+        <span class="drill-title" id="drill-title">Detalle</span>
+        <span class="drill-path" id="drill-path"></span>
+        <button onclick="cerrarDrill()" style="background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;line-height:1;margin-left:8px" title="Cerrar">✕</button>
+      </div>
+      <div id="drill-ministats" style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:700;background:#f0f4f9;border-radius:8px;padding:8px 14px;margin-bottom:14px"></div>
+      <div id="drill-content"></div>
+    </div>
+  </div>
+
+  <!-- EDITOR DE HISTÓRICO MENSUAL: corrección manual (ej. error de dedo al
+       capturar un año previo al sistema). -->
+  <div class="modal-overlay" id="modal-editar-historico-adm">
+    <div class="modal-box" style="max-width:420px">
+      <div class="modal-head">
+        <span class="modal-title">✏️ Editar histórico mensual</span>
+        <button class="modal-close" onclick="cerrarEditorHistoricoAdm()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:12px;color:var(--muted)">Año</label>
+          <select id="edit-hist-anio-adm" onchange="cargarEditorHistoricoAnioAdm()"
+            style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:13px"></select>
+        </div>
+        <div id="edit-hist-meses-adm" style="display:flex;flex-direction:column;gap:6px"></div>
+        <button class="btn" style="margin-top:14px;width:100%" onclick="guardarEditorHistoricoAdm()">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PARÁMETROS -->
+  <div class="modal-overlay" id="modal-parametros">
+    <div class="modal-box">
+      <div class="modal-head">
+        <span class="modal-title">⚙ Parámetros del sistema</span>
+        <button class="modal-close" onclick="cerrarParametros()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="param-card">
+          <h3>Edificio</h3>
+          <div class="param-row">
+            <input type="text" id="param-edificio-nombre" placeholder="Nombre del edificio">
+            <input type="number" id="param-capacidad" min="1" placeholder="Cantidad de cajones">
+            <button class="param-btn" onclick="guardarCapacidad()">Guardar</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">
+            Por ahora un edificio = una plaza. Si más adelante esta plaza tiene varios edificios físicos, se separa en su propia tabla.
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Tarifas y tolerancia</h3>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Tarifa normal ($/hr)</label>
+            <input type="number" id="param-tarifa-normal" min="0" step="0.5">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Tarifa preferencial ($/hr)</label>
+            <input type="number" id="param-tarifa-pref" min="0" step="0.5">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Boleto perdido ($ fijo)</label>
+            <input type="number" id="param-tarifa-perdido" min="0" step="1">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Tolerancia (min)</label>
+            <input type="number" id="param-tolerancia" min="0" step="1">
+          </div>
+          <div class="param-row">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;flex:1">
+              <input type="checkbox" id="param-redondeo-habilitado" style="width:16px;height:16px" onchange="document.getElementById('param-redondeo-min').disabled = !this.checked">
+              Activar tolerancia de redondeo
+            </label>
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Minutos de gracia por hora</label>
+            <input type="number" id="param-redondeo-min" min="0" step="1">
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px" id="param-redondeo-hint">
+            Si un auto se pasa por pocos minutos de una hora completa, no se le cobra la hora siguiente entera. No afecta la tolerancia de cortesía de arriba (esa sigue siendo solo para la primera hora).
+          </div>
+          <div class="param-row">
+            <button class="param-btn" onclick="guardarTarifas()">Guardar tarifas</button>
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Empresa y datos fiscales</h3>
+          <div class="param-row">
+            <input type="text" id="param-empresa-grupo" placeholder="Empresa / Grupo">
+            <input type="text" id="param-rfc" placeholder="RFC">
+          </div>
+          <div class="param-row">
+            <input type="text" id="param-ciudad" placeholder="Ciudad">
+            <input type="text" id="param-estado" placeholder="Estado">
+          </div>
+          <div class="param-row">
+            <input type="text" id="param-direccion" placeholder="Dirección">
+          </div>
+          <div class="param-row">
+            <button class="param-btn" onclick="guardarDatosFiscales()">Guardar</button>
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Horarios de operación</h3>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Inicio de operaciones</label>
+            <input type="time" id="param-hora-apertura">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Cambio de turno 1</label>
+            <input type="time" id="param-hora-relevo1">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Cambio de turno 2</label>
+            <input type="time" id="param-hora-relevo2">
+          </div>
+          <div class="param-row">
+            <label style="font-size:11px;color:var(--muted);min-width:110px">Cierre del día</label>
+            <input type="time" id="param-hora-cierre">
+          </div>
+          <div class="param-row">
+            <button class="param-btn" onclick="guardarHorarios()">Guardar horarios</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">
+            Los botones de Inicio de turno, Relevo y Cierre del día en el Operador solo se habilitan desde una hora antes de cada horario configurado aquí.
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>URL de facturación</h3>
+          <div class="param-row">
+            <input type="url" id="param-url-facturacion" placeholder="https://...">
+            <button class="param-btn" onclick="guardarUrlFacturacion()">Guardar</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">
+            Esta liga se convierte en el QR que aparece en el ticket impreso cuando hay un monto a cobrar.
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Promociones</h3>
+          <div class="param-row">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;flex:1">
+              <input type="checkbox" id="param-promociones-habilitado" style="width:16px;height:16px" onchange="guardarPromocionesHabilitado()">
+              Módulo de promociones activo
+            </label>
+            <a class="param-btn outline" href="ONLYPARK_Promo_Admin.html" target="_blank">Abrir Promociones →</a>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px" id="param-promociones-hint"></div>
+        </div>
+
+        <div class="param-card">
+          <h3>Pensiones</h3>
+          <div class="param-row">
+            <div style="flex:1;font-size:12.5px;color:var(--muted)">
+              Captura y administra a los clientes con pensión activa.
+            </div>
+            <a class="param-btn outline" href="ONLYPARK_Pensiones.html" target="_blank">Abrir Pensiones →</a>
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Operadores / Cajeros<span class="param-tag" id="cajeros-count">0</span></h3>
+          <div id="lista-cajeros" style="margin-bottom:12px"></div>
+          <div class="param-row">
+            <input type="text" id="nuevo-cajero-nombre" placeholder="Nombre">
+            <input type="text" id="nuevo-cajero-usuario" placeholder="Usuario">
+            <input type="password" id="nuevo-cajero-password" placeholder="Contraseña" autocomplete="new-password">
+            <select id="nuevo-cajero-rol">
+              <option value="cajero">Cajero / Operador</option>
+              <option value="admin_plaza">Administrador de plaza</option>
+              <option value="corporativo">Oficina central</option>
+            </select>
+            <button class="param-btn" onclick="agregarCajero()">+ Agregar</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">
+            Este usuario/contraseña es lo que se pide al entrar a cualquiera de los 3 portales (Operador, Administrador, Oficina central) según su rol.
+          </div>
+        </div>
+
+        <div class="param-card">
+          <h3>Empleados<span class="param-tag" id="empleados-count">0</span></h3>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px">
+            Catálogo de empleados con cortesía de estacionamiento. Al dar entrada tipo "Empleado" en la caseta, el cajero elige de esta lista quién es.
+          </div>
+          <div id="lista-empleados" style="margin-bottom:12px"></div>
+          <div class="param-row">
+            <input type="text" id="nuevo-empleado-nombre" placeholder="Nombre completo">
+            <input type="text" id="nuevo-empleado-puesto" placeholder="Puesto">
+            <input type="text" id="nuevo-empleado-area" placeholder="Área">
+            <button class="param-btn" id="btn-guardar-empleado" onclick="agregarEmpleado()">+ Agregar</button>
+            <button class="param-btn outline" id="btn-cancelar-edicion-empleado" style="display:none" onclick="cancelarEdicionEmpleado()">Cancelar</button>
+          </div>
+        </div>
+
+        <div class="param-card proximamente" style="display:none">
+          <h3>Administrador de usuarios<span class="param-tag">Próximamente</span></h3>
+          <div style="font-size:12.5px;color:var(--muted)">
+            Aquí se van a manejar las cuentas y permisos de acceso a los 3 portales (Operador, Administrador, Oficina central).
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: BITÁCORA ══ -->
+
+  <!-- ══ MODAL: GESTIÓN MANUAL DE TICKETS ══ -->
+  <div class="modal-overlay" id="modal-gestion-manual">
+    <div class="modal-box" style="max-width:820px">
+      <div class="modal-head">
+        <span class="modal-title">✍️ Gestión manual de tickets</span>
+        <button class="modal-close" onclick="cerrarGestionManual()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="param-card">
+          <h3>Cancelar ticket</h3>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">
+            Busca un folio, revisa sus datos y cancélalo con un motivo — queda marcado como CANCELADO (no se borra) y no cuenta en reportes ni ingresos. El motivo se registra en la bitácora.
+          </div>
+          <div class="param-row">
+            <input type="text" id="gm-folio-buscar" placeholder="Folio a cancelar">
+            <button class="param-btn outline" onclick="buscarTicketParaCancelar()">Buscar</button>
+          </div>
+          <div id="gm-cancelar-detalle" style="margin-top:10px"></div>
+        </div>
+
+        <div class="param-card">
+          <h3>Captura manual de ticket</h3>
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">
+            Para registrar movimientos que no quedaron en el sistema (ej. falla de energía) — captura folio, fecha, horas, cajeros e importe a mano.
+          </div>
+          <div class="param-row">
+            <input type="text" id="gm-folio" placeholder="Folio">
+            <select id="gm-tipo">
+              <option value="normal">Normal</option>
+              <option value="preferencial">Preferencial</option>
+              <option value="pension">Pensión</option>
+              <option value="empleado">Empleado</option>
+            </select>
+            <input type="date" id="gm-fecha">
+          </div>
+          <div class="param-row" style="margin-top:8px">
+            <label style="font-size:11px;color:var(--muted);min-width:95px">Entrada</label>
+            <input type="time" id="gm-hora-entrada">
+            <input type="text" id="gm-cajero-entrada" placeholder="Cajero de entrada">
+          </div>
+          <div class="param-row" style="margin-top:8px">
+            <label style="font-size:11px;color:var(--muted);min-width:95px">Salida</label>
+            <input type="time" id="gm-hora-salida">
+            <input type="text" id="gm-cajero-salida" placeholder="Cajero de salida (si ya salió)">
+          </div>
+          <div class="param-row" style="margin-top:8px">
+            <label style="font-size:11px;color:var(--muted);min-width:95px">Cobro</label>
+            <input type="number" id="gm-importe" placeholder="Monto cobrado ($)" min="0" step="0.5" style="max-width:140px">
+          </div>
+          <div class="param-row" style="margin-top:8px">
+            <textarea id="gm-motivo" placeholder="Nota / motivo de la captura manual (ej. falla de energía el 15/julio en la mañana)" style="flex:1;min-height:50px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit"></textarea>
+          </div>
+          <div class="param-row" style="margin-top:10px">
+            <button class="param-btn" onclick="guardarCapturaManual()">+ Guardar ticket</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL: AVISO A OPERADORES ══ -->
+  <div class="modal-overlay" id="modal-aviso-operador">
+    <div class="modal-box" style="max-width:480px">
+      <div class="modal-head">
+        <span class="modal-title">💬 Chat con operadores</span>
+        <button class="modal-close" onclick="cerrarAvisoOperador()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="param-card">
+          <div style="font-size:12.5px;color:var(--muted);margin-bottom:10px">
+            El mensaje aparece la próxima vez que ese operador (o todos) use la tablet — por ejemplo, para pedirles que presionen "Actualizar app" antes de iniciar su turno.
+          </div>
+          <div class="param-row">
+            <select id="aviso-destinatario" style="flex:1">
+              <option value="">Todos los operadores</option>
+            </select>
+          </div>
+          <div class="param-row" style="margin-top:10px">
+            <textarea id="aviso-mensaje" placeholder="Ej. Por favor presiona el botón 'Actualizar app' antes de iniciar tu turno de hoy." style="flex:1;min-height:80px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit"></textarea>
+          </div>
+          <div class="param-row" style="margin-top:10px">
+            <button class="param-btn" onclick="enviarAvisoOperador()">📣 Enviar aviso</button>
+          </div>
+        </div>
+        <div class="param-card">
+          <h3>Preguntas de los operadores</h3>
+          <div id="preguntas-operadores-lista" style="display:flex;flex-direction:column;gap:10px;max-height:280px;overflow-y:auto">
+            <div style="font-size:12.5px;color:var(--muted)">Cargando...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-grid" style="grid-template-columns:repeat(3,1fr)" id="charts-row1">
+
+    <!-- Ocupación actual -->
+    <div class="chart-card" id="card-ocupacion-actual">
+      <div class="chart-title">Ocupación actual</div>
+      <div class="chart-sub">Autos en plaza en este momento</div>
+      <div style="display:flex;gap:12px;font-size:11px;font-weight:700;margin-bottom:4px" title="IN = autos dentro ahora · OUT = tickets del período que ya salieron">
+        <span style="color:#0d2340">🅿 IN: <span id="stat-in">0</span></span>
+        <span style="color:#6E6E73">↗ OUT: <span id="stat-out">0</span></span>
+      </div>
+      <div class="ocupacion-wrap">
+        <div class="gauge-num">
+          <div class="gauge-pct" id="gauge-pct">0%</div>
+          <div style="font-size:10px;color:var(--muted)" id="gauge-sub">0 / 40</div>
+        </div>
+        <div class="gauge-bar-wrap">
+          <div class="gauge-bar-bg">
+            <div class="gauge-bar-fill" id="gauge-fill" style="width:0%"></div>
+          </div>
+          <div class="gauge-labels">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100% (40)</span>
+          </div>
+          <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:5px">
+            <div style="background:#eaeef4;border-radius:6px;padding:5px 6px;text-align:center;cursor:pointer" onclick="drillOcupacionTipo('normal')" title="Ver detalle">
+              <div style="font-size:9px;color:var(--muted);font-weight:700">Normales</div>
+              <div style="font-size:14px;font-weight:900;color:#0d2340" id="ocu-normal">0</div>
+            </div>
+            <div style="background:#eaeef4;border-radius:6px;padding:5px 6px;text-align:center;cursor:pointer" onclick="drillOcupacionTipo('preferencial')" title="Ver detalle">
+              <div style="font-size:9px;color:var(--muted);font-weight:700">Preferenciales</div>
+              <div style="font-size:14px;font-weight:900;color:#0d2340" id="ocu-pref">0</div>
+            </div>
+            <div style="background:#eaeef4;border-radius:6px;padding:5px 6px;text-align:center;cursor:pointer" onclick="drillOcupacionTipo('empleado')" title="Ver detalle">
+              <div style="font-size:9px;color:var(--muted);font-weight:700">Empleados</div>
+              <div style="font-size:14px;font-weight:900;color:#0d2340" id="ocu-empleado">0</div>
+            </div>
+            <div style="background:#eaeef4;border-radius:6px;padding:5px 6px;text-align:center;cursor:pointer" onclick="drillOcupacionTipo('pension')" title="Ver detalle">
+              <div style="font-size:9px;color:var(--muted);font-weight:700">Pensión</div>
+              <div style="font-size:14px;font-weight:900;color:#3aa757" id="ocu-pension">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desglose Ticket -->
+    <div class="chart-card">
+      <div class="chart-title">Desglose Ticket</div>
+      <div class="chart-sub">Normal · Preferente · Perdido · Cortesía (≤15 min) · Pensión · Empleado · clic para ver detalle</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px" id="desglose-pagos"></div>
+      <div id="mix-bars" style="display:flex;flex-direction:column;gap:4px;margin-top:4px"></div>
+    </div>
+
+    <!-- Ranking cajeros -->
+    <div class="chart-card">
+      <div class="chart-title">Rendimiento por cajero</div>
+      <div class="chart-sub">Clic para ver detalle del turno</div>
+      <div id="cajero-ranking"></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-grid">
+
+    <!-- Ingresos por franja horaria -->
+    <div class="chart-card">
+      <div class="chart-title">Ingresos por franja horaria</div>
+      <div class="chart-sub">05–10 · 10–17 · 17–22 · clic para ver detalle</div>
+      <div id="franja-bars" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
+    </div>
+
+    <!-- Actividad: barras periodo actual + línea periodo anterior superpuesta -->
+    <div class="chart-card">
+      <div class="chart-title">Actividad — Comparativo</div>
+      <div class="chart-sub">Número de tickets por hora · clic en barra para ver detalle</div>
+      <div style="display:flex;gap:12px;font-size:9px;font-weight:700;margin-bottom:2px">
+        <span style="color:var(--accent)">■ Período actual</span>
+        <span style="color:#F5A623">— Período anterior (<span id="actividad-anterior-sub">—</span>)</span>
+      </div>
+      <div id="actividad-comparativa"></div>
+    </div>
+  </div>
+
+  <!-- TABLA CORTE DIARIO -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <div>
+        <div class="chart-title">Corte del día — Detalle de operaciones</div>
+        <div class="chart-sub">Todas las transacciones del período · Clic en fila para drill-through</div>
+      </div>
+      <button onclick="exportarCSV()" style="margin-left:auto;background:var(--accent);
+              color:#fff;border:none;border-radius:8px;padding:8px 16px;
+              font-size:12px;font-weight:700;cursor:pointer">⬇ Export CSV</button>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th><th>Tipo</th><th>Cajero</th>
+            <th>Entrada</th><th>Salida</th><th>Min</th>
+            <th>Franja</th><th style="text-align:right">Importe</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ops"></tbody>
+      </table>
+    </div>
+    <div id="tabla-empty" style="text-align:center;padding:28px;color:var(--muted);font-size:14px;display:none">
+      Sin operaciones para el período seleccionado
+    </div>
+  </div>
+
+</div><!-- /tab-section dashboard -->
+
+<!-- ══ TAB MOVIMIENTOS: copia del buscador de la caseta, pero sin límite a
+     "hoy" — el administrador recibe quejas/preguntas de cualquier día y
+     necesita localizar el movimiento rápido con todos los filtros. ══ -->
+<div class="tab-section" id="tab-movimientos">
+
+  <div class="filtros" style="margin-bottom:10px">
+    <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Rango</label>
+    <select id="filtro-periodo-rapido-mov" onchange="aplicarPeriodoRapidoMovAdmin()">
+      <option value="hoy" selected>Hoy</option>
+      <option value="ayer">Ayer</option>
+      <option value="lunes">Lunes</option>
+      <option value="martes">Martes</option>
+      <option value="miercoles">Miércoles</option>
+      <option value="jueves">Jueves</option>
+      <option value="viernes">Viernes</option>
+      <option value="sabado">Sábado</option>
+      <option value="domingo">Domingo</option>
+      <option value="semana">Esta semana</option>
+      <option value="mes">Este mes</option>
+    </select>
+    <input type="date" id="filtro-desde-mov">
+    <input type="date" id="filtro-hasta-mov">
+    <button class="btn-filtro" onclick="actualizarMovimientosAdmin()">↻ Buscar</button>
+    <span style="margin-left:auto;font-size:12px;color:var(--muted)" id="mov-fuente-adm"></span>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+    <input id="filtro-folio-mov" type="text" placeholder="🔍 Folio entrada" oninput="refrescarMovimientosAdmin()"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px;width:130px" />
+    <select id="filtro-tipo-mov" onchange="refrescarMovimientosAdmin()"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px">
+      <option value="todos">Todos los movimientos</option>
+      <option value="entrada">Normal</option>
+      <option value="preferencial">Preferencial</option>
+      <option value="empleado">Empleados</option>
+      <option value="pension">Pensión</option>
+    </select>
+    <select id="filtro-franja-mov" onchange="refrescarMovimientosAdmin()"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px">
+      <option value="todas">Todas las franjas</option>
+      <option value="f1">05:00–10:00</option>
+      <option value="f2">10:00–17:00</option>
+      <option value="f3">17:00–22:00</option>
+    </select>
+    <select id="filtro-estatus-mov" onchange="refrescarMovimientosAdmin()"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px">
+      <option value="todos">Todos los estatus</option>
+      <option value="abierto">Abierto</option>
+      <option value="cerrados">Cerrados (pagados)</option>
+      <option value="cobrado">Cobrado</option>
+      <option value="perdido">Perdido</option>
+      <option value="cortesia">Cortesía</option>
+    </select>
+    <select id="orden-mov-adm" onchange="refrescarMovimientosAdmin()"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 10px;font-size:13px">
+      <option value="reciente">Más reciente primero</option>
+      <option value="folio">Ordenar por folio</option>
+      <option value="folio_salida">Ordenar por folio de cobro</option>
+      <option value="estatus">Ordenar por estatus</option>
+      <option value="tipo">Ordenar por tipo</option>
+      <option value="hora_entrada">Ordenar por hora de entrada</option>
+      <option value="hora_salida">Ordenar por hora de salida (cobro)</option>
+      <option value="monto">Ordenar por monto (mayor primero)</option>
+      <option value="cajero_entrada">Ordenar por cajero que recibe</option>
+      <option value="cajero_salida">Ordenar por cajero que cobra</option>
+      <option value="empleado">Ordenar por empleado</option>
+      <option value="pension">Ordenar por pensionado</option>
+    </select>
+    <button onclick="toggleFiltrosAvanzadosMovAdmin()" id="btn-toggle-filtros-avanzados-adm"
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 12px;font-size:13px;background:#eef2f7;color:var(--accent);cursor:pointer;font-weight:700">▾ Más filtros</button>
+    <button onclick="limpiarFiltrosMovimientosAdmin()" title="Regresa todos los filtros a su valor por default"
+      style="border:1.5px solid var(--border);border-radius:6px;padding:6px 12px;font-size:13px;background:#fff;color:var(--muted);cursor:pointer;font-weight:700">✕ Limpiar filtros</button>
+  </div>
+
+  <div id="mov-filtros-avanzados-adm" style="display:none;flex-direction:column;gap:8px;padding:8px 0;border-top:1px dashed var(--border);margin-bottom:8px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;width:100%">Folios y cajeros</span>
+      <input id="filtro-folio-salida-mov" type="text" placeholder="🔍 Folio salida" oninput="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;width:130px" />
+      <select id="filtro-cajero-entrada-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Cajero que recibe: todos</option>
+      </select>
+      <select id="filtro-cajero-salida-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Cajero que cobra: todos</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;width:100%">Horarios</span>
+      <label style="font-size:12px;color:var(--muted)">Entrada desde
+        <input id="filtro-hora-entrada-desde-mov" type="time" onchange="refrescarMovimientosAdmin()" style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px"></label>
+      <label style="font-size:12px;color:var(--muted)">hasta
+        <input id="filtro-hora-entrada-hasta-mov" type="time" onchange="refrescarMovimientosAdmin()" style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px"></label>
+      <label style="font-size:12px;color:var(--muted)">Salida desde
+        <input id="filtro-hora-salida-desde-mov" type="time" onchange="refrescarMovimientosAdmin()" style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px"></label>
+      <label style="font-size:12px;color:var(--muted)">hasta
+        <input id="filtro-hora-salida-hasta-mov" type="time" onchange="refrescarMovimientosAdmin()" style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px"></label>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;width:100%">Empleados</span>
+      <select id="filtro-empleado-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Todos los empleados</option>
+      </select>
+      <input id="filtro-empleado-buscar-mov" type="text" placeholder="🔍 Buscar empleado" oninput="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;width:150px" />
+      <select id="filtro-empleado-area-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Todas las áreas</option>
+      </select>
+      <select id="filtro-empleado-puesto-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Todos los puestos</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;width:100%">Pensiones</span>
+      <select id="filtro-pension-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Todas las pensiones</option>
+      </select>
+      <input id="filtro-pension-id-mov" type="text" placeholder="🔍 Pension ID" oninput="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;width:130px" />
+      <input id="filtro-pension-cliente-mov" type="text" placeholder="🔍 Cliente" oninput="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;width:130px" />
+      <select id="filtro-pension-tipo-mov" onchange="refrescarMovimientosAdmin()"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px">
+        <option value="todos">Todos los tipos</option>
+        <option value="dia">Día</option>
+        <option value="noche">Noche</option>
+        <option value="24h">24 horas</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="mov-resumen-adm" style="display:flex;gap:10px;flex-wrap:wrap;padding:8px 0;font-size:12px"></div>
+
+  <div class="chart-card" style="overflow:auto">
+    <div style="min-width:1550px">
+      <div id="mov-header-adm" style="display:grid;grid-template-columns:22px 100px 100px 85px minmax(160px,1fr) 100px 100px 80px 70px 70px 90px 90px 90px 75px 80px;
+           gap:8px;padding:6px 14px;background:var(--bg);border-radius:6px;
+           font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;position:sticky;top:0">
+        <span></span>
+        <span>Folio entrada</span>
+        <span>Folio salida</span>
+        <span>Tipo</span>
+        <span>Descripción</span>
+        <span>Empleado</span>
+        <span>Pensionado</span>
+        <span>Tipo pensión</span>
+        <span style="text-align:center">Hora entrada</span>
+        <span style="text-align:center">Hora salida</span>
+        <span style="text-align:center">Estancia</span>
+        <span>Cajero entrada</span>
+        <span>Cajero salida</span>
+        <span style="text-align:right">Importe</span>
+        <span>Estatus</span>
+      </div>
+      <div id="mov-lista-adm"></div>
+    </div>
+  </div>
+
+  <div style="padding:14px 0;display:flex;justify-content:flex-end">
+    <button onclick="exportarMovimientosAdminCSV()" style="background:var(--accent);
+            color:#fff;border:none;border-radius:8px;padding:9px 20px;
+            font-size:13px;font-weight:700;cursor:pointer">⬇ Exportar CSV</button>
+  </div>
+
+</div>
+
+<!-- MODAL DETALLE DE MOVIMIENTO (tab Movimientos de Admin) -->
+<div class="modal-overlay" id="modal-detalle-movimiento-adm">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-head">
+      <span class="modal-title">📄 Detalle del movimiento</span>
+      <button class="modal-close" onclick="document.getElementById('modal-detalle-movimiento-adm').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="detalle-mov-adm-contenido" style="font-size:13px;line-height:1.9"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB CIERRE ADMINISTRATIVO: reconciliación diaria de boletos que se
+     quedaron abiertos (pago conjunto, cliente que no pagó, evasión, boleto
+     perdido sin folio original) — la meta es que al final de cada día no
+     quede ningún boleto abierto sin resolver. ══ -->
+<div class="tab-section" id="tab-cierre-admin">
+  <div class="chart-card">
+    <div class="chart-title">⚠️ Cierre administrativo</div>
+    <div class="chart-sub">Boletos abiertos pendientes de cerrar, agrupados por día. Un día sin filas aquí es un día ya cuadrado.</div>
+    <div id="cierre-admin-dias" style="margin-top:10px"></div>
+  </div>
+  <div class="chart-card" id="cierre-admin-detalle-card" style="display:none;margin-top:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <button class="param-btn outline" onclick="cerrarDetalleCierreAdmin()">← Volver a los días</button>
+      <div class="chart-title" style="margin:0" id="cierre-admin-detalle-titulo"></div>
+    </div>
+    <div id="cierre-admin-detalle-tabla" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ══ TAB BITÁCORA: registro de auditoría (login/cobro/cierre/relevo/arqueo)
+     — antes era un modal colgado del ☰ Menú, ahora es una pestaña más del
+     tablero para que el admin la consulte igual de rápido que Movimientos. ══ -->
+<div class="tab-section" id="tab-bitacora">
+  <div class="param-card">
+    <div class="param-row">
+      <label style="font-size:11px;color:var(--muted)">Desde</label>
+      <input type="date" id="bit-desde">
+      <label style="font-size:11px;color:var(--muted)">Hasta</label>
+      <input type="date" id="bit-hasta">
+      <label style="font-size:11px;color:var(--muted)">Hora desde</label>
+      <input type="time" id="bit-hora-desde">
+      <label style="font-size:11px;color:var(--muted)">Hora hasta</label>
+      <input type="time" id="bit-hora-hasta">
+    </div>
+    <div class="param-row" style="margin-top:10px">
+      <input type="text" id="bit-usuario" placeholder="Usuario (nombre o usuario)">
+      <select id="bit-accion">
+        <option value="">Todas las acciones</option>
+        <option value="login">Login</option>
+        <option value="cobro">Cobro</option>
+        <option value="cancelacion">Cancelación</option>
+        <option value="arqueo">Arqueo</option>
+        <option value="relevo">Relevo</option>
+        <option value="cierre_dia">Cierre de día</option>
+        <option value="reimpresion_comprobante">Reimpresión comprobante</option>
+        <option value="atajo_teclado">Atajo de teclado (F2-F8)</option>
+        <option value="folio_leido">Folio leído</option>
+        <option value="seleccion">Selección (pensión/empleado)</option>
+        <option value="impresion">Impresión</option>
+        <option value="vista_pantalla">Vista de pantalla</option>
+      </select>
+      <button class="param-btn" onclick="buscarBitacora()">🔍 Buscar</button>
+      <button class="param-btn outline" onclick="exportarBitacoraCSV()">⬇ Exportar CSV</button>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:10px" id="bitacora-count">—</div>
+  <div id="bitacora-tabla"></div>
+</div>
+
+<!-- ══ TAB DEMANDA (embebida — carga perezosa la primera vez que se abre) ══ -->
+<div class="tab-section" id="tab-demanda">
+  <iframe id="iframe-demanda" title="Análisis de Demanda"
+    style="width:100%;height:1650px;border:none;border-radius:12px;background:#fff"></iframe>
+</div>
+
+</div><!-- /container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ══
+const SUPABASE_URL = 'https://ixumzgorhuhftasgrmhg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4dW16Z29yaHVoZnRhc2dybWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NjY2NDQsImV4cCI6MjEwMTA0MjY0NH0.Zmz8nqDqanNdjLN5UrG0zPlc6THDWHeZkddS7ztO1GA';
+const PLAZA_ID     = ''; // Se obtiene automáticamente
+
+// ══ ESTADO ══
+let DATOS = {
+  operaciones: [],
+  turno_actual: null,
+  autos_en_plaza: 0,
+  capacidad: 40
+};
+let _drillActual = null;
+
+// ══ CLOCK ══
+setInterval(() => {
+  document.getElementById('nav-clock').textContent =
+    new Date().toLocaleTimeString('es-MX');
+}, 1000);
+
+// ══ MODO DE TABLERO (Seguimiento = hoy en vivo, sin filtros · Histórico =
+// tablero completo con filtros de período) — ambos modos reusan el MISMO
+// tablero/JS/DOM: no hay dos copias de estado ni de renderizado, solo se
+// bloquea el período a "hoy" y se ocultan 3 tarjetas que no aplican a una
+// instantánea en vivo (Autos en plaza / Ocupación % / Ocupación actual).
+let MODO_TAB = 'seguimiento';
+function showTabModo(modo, el) {
+  MODO_TAB = modo;
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-dashboard').classList.add('active');
+  el.classList.add('active');
+  logBitacora('vista_pantalla', { pantalla: modo === 'historico' ? 'Histórico' : 'Seguimiento' });
+  aplicarModoTab();
+  cargarDatos();
+}
+function aplicarModoTab() {
+  const esHistorico = MODO_TAB === 'historico';
+  document.getElementById('filtro-periodo-wrap').style.display = esHistorico ? '' : 'none';
+  document.getElementById('kpi-card-autos').style.display = esHistorico ? 'none' : '';
+  document.getElementById('kpi-card-ocupacion-pct').style.display = esHistorico ? 'none' : '';
+  document.getElementById('card-ocupacion-actual').style.display = esHistorico ? 'none' : '';
+  document.getElementById('kpi-grid-main').style.gridTemplateColumns = esHistorico ? 'repeat(4,1fr)' : 'repeat(6,1fr)';
+  // Al ocultar "Ocupación actual" en Histórico, quedan solo 2 tarjetas —
+  // sin este ajuste la fila se queda en 3 columnas fijas y las 2 restantes
+  // se recorren a la izquierda dejando un tercio de espacio muerto a la
+  // derecha, en vez de repartirse la fila a la mitad.
+  document.getElementById('charts-row1').style.gridTemplateColumns = esHistorico ? 'repeat(2,1fr)' : 'repeat(3,1fr)';
+  if (!esHistorico) {
+    document.getElementById('filtro-periodo').value = 'hoy';
+    document.getElementById('filtro-desde').style.display = 'none';
+    document.getElementById('filtro-hasta').style.display = 'none';
+  }
+}
+
+// ══ CAPTURA HISTÓRICO MENSUAL (historico_mensual) — menú, corrección manual ══
+const MESES_NOMBRE_ADM = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let PLAZA_ID_HIST_ADM = null;
+async function obtenerPlazaIdHistAdm() {
+  if (PLAZA_ID_HIST_ADM) return PLAZA_ID_HIST_ADM;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=plaza_id&limit=1`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
+    });
+    const rows = r.ok ? await r.json() : [];
+    PLAZA_ID_HIST_ADM = rows[0] ? rows[0].plaza_id : null;
+  } catch (e) { PLAZA_ID_HIST_ADM = null; }
+  return PLAZA_ID_HIST_ADM;
+}
+// Editor: corrección manual (ej. error de dedo al capturar un año previo al
+// sistema). Guardar siempre marca origen 'manual', así el recálculo
+// automático nunca lo vuelve a pisar.
+function abrirEditorHistoricoAdm() {
+  const sel = document.getElementById('edit-hist-anio-adm');
+  const hoy = new Date().getFullYear();
+  sel.innerHTML = '';
+  for (let a = hoy; a >= hoy - 5; a--) sel.innerHTML += `<option value="${a}">${a}</option>`;
+  sel.value = hoy - 1;
+  document.getElementById('modal-editar-historico-adm').classList.add('open');
+  cargarEditorHistoricoAnioAdm();
+}
+function cerrarEditorHistoricoAdm() {
+  document.getElementById('modal-editar-historico-adm').classList.remove('open');
+}
+async function cargarEditorHistoricoAnioAdm() {
+  const anio = document.getElementById('edit-hist-anio-adm').value;
+  const plazaId = await obtenerPlazaIdHistAdm();
+  const cont = document.getElementById('edit-hist-meses-adm');
+  cont.innerHTML = 'Cargando…';
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/historico_mensual?plaza_id=eq.${plazaId}&anio=eq.${anio}&select=mes,monto_total`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
+  });
+  const rows = r.ok ? await r.json() : [];
+  const valores = {};
+  rows.forEach(row => valores[row.mes] = row.monto_total);
+  cont.innerHTML = MESES_NOMBRE_ADM.map((nombre,i) => {
+    const mes = i+1;
+    return `<label style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px">
+      <span style="width:90px">${nombre}</span>
+      <input type="number" step="0.01" id="edit-hist-mes-adm-${mes}" value="${valores[mes]!=null?valores[mes]:''}" placeholder="0"
+        style="flex:1;border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;text-align:right">
+    </label>`;
+  }).join('');
+}
+async function guardarEditorHistoricoAdm() {
+  const anio = parseInt(document.getElementById('edit-hist-anio-adm').value);
+  const plazaId = await obtenerPlazaIdHistAdm();
+  const filas = [];
+  for (let mes = 1; mes <= 12; mes++) {
+    const el = document.getElementById(`edit-hist-mes-adm-${mes}`);
+    const val = el.value.trim();
+    if (val === '') continue;
+    filas.push({ plaza_id: plazaId, anio, mes, monto_total: Number(val), tickets_totales: 0, origen: 'manual', actualizado_en: new Date().toISOString() });
+  }
+  if (!filas.length) { cerrarEditorHistoricoAdm(); return; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/historico_mensual?on_conflict=plaza_id,anio,mes`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(filas)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    cerrarEditorHistoricoAdm();
+    showToast('Histórico guardado');
+  } catch (e) {
+    alert('No se pudo guardar el histórico: ' + e.message);
+  }
+}
+
+// ══ FILTROS ══
+function onFiltroCambio() {
+  const p = document.getElementById('filtro-periodo').value;
+  document.getElementById('filtro-desde').style.display = p==='custom'?'':'none';
+  document.getElementById('filtro-hasta').style.display = p==='custom'?'':'none';
+  if (p !== 'custom') cargarDatos();
+}
+
+// ══ ETIQUETA DE PERÍODO (Task 78): antes solo se veía el reloj de la nav —
+// ahora se muestra en texto claro qué día/semana/mes se está viendo.
+const MESES_LARGOS_ADM = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS_LARGOS_ADM  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function capitalizarAdm(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+function fmtFechaLargaAdm(fechaStr) {
+  const d = new Date(fechaStr+'T12:00:00');
+  return `${DIAS_LARGOS_ADM[d.getDay()]} ${d.getDate()} de ${MESES_LARGOS_ADM[d.getMonth()]} de ${d.getFullYear()}`;
+}
+function actualizarPeriodoLabel() {
+  const el = document.getElementById('periodo-label');
+  if (!el) return;
+  if (MODO_TAB === 'seguimiento') {
+    el.textContent = '🔴 En vivo — ' + capitalizarAdm(fmtFechaLargaAdm(fmtLocal(new Date())));
+    return;
+  }
+  const p = document.getElementById('filtro-periodo').value;
+  const {desde, hasta} = getFechas();
+  if (!desde || !hasta) { el.textContent = 'Selecciona un rango'; return; }
+  const DIA_IDX_LBL = { domingo:0, lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6 };
+  if (p === 'hoy' || p in DIA_IDX_LBL) {
+    el.textContent = capitalizarAdm(fmtFechaLargaAdm(desde));
+  } else if (p === 'semana' || p === 'semana_pasada') {
+    const d1 = new Date(desde+'T12:00:00'), d2 = new Date(hasta+'T12:00:00');
+    const prefijo = p === 'semana_pasada' ? 'Semana pasada — del ' : 'Semana del ';
+    el.textContent = `${prefijo}${d1.getDate()} al ${d2.getDate()} de ${MESES_LARGOS_ADM[d2.getMonth()]} de ${d2.getFullYear()}`;
+  } else if (p === 'mes') {
+    const d = new Date(desde+'T12:00:00');
+    el.textContent = capitalizarAdm(MESES_LARGOS_ADM[d.getMonth()]) + ' ' + d.getFullYear();
+  } else {
+    el.textContent = desde === hasta ? capitalizarAdm(fmtFechaLargaAdm(desde)) : `Del ${desde} al ${hasta}`;
+  }
+}
+
+// Fecha local (no UTC) — toISOString() convierte a UTC, así que en la noche
+// (México, UTC-6) "hoy" se recorría al día siguiente y los filtros de
+// periodo (Hoy/Semana/Mes) dejaban de cuadrar entre sí.
+function fmtLocal(d) {
+  const p2 = n => String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+}
+function getFechas() {
+  const p = document.getElementById('filtro-periodo').value;
+  const hoy = new Date();
+  const fmt = fmtLocal;
+  if (p === 'hoy')    return { desde: fmt(hoy), hasta: fmt(hoy) };
+  // Día de la semana elegido → la ocurrencia más reciente de ese día (hoy
+  // incluido). Evita el cálculo mental de "ayer/antier" — el usuario piensa
+  // en el nombre del día, no en hace cuántos días fue.
+  const DIA_IDX = { domingo:0, lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6 };
+  if (p in DIA_IDX) {
+    const diff = (hoy.getDay() - DIA_IDX[p] + 7) % 7;
+    const d = new Date(hoy); d.setDate(hoy.getDate() - diff);
+    return { desde: fmt(d), hasta: fmt(d) };
+  }
+  if (p === 'semana') {
+    // getDay()-1 falla en domingo (getDay()===0 da lunes de la semana
+    // SIGUIENTE, no la actual) — (getDay()+6)%7 funciona los 7 días.
+    const ini = new Date(hoy); ini.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+    return { desde: fmt(ini), hasta: fmt(hoy) };
+  }
+  if (p === 'semana_pasada') {
+    // Lunes a domingo de la semana ANTERIOR (no incluye hoy) — el lunes de
+    // esta semana menos 7 días, hasta el domingo de esa misma semana pasada.
+    const iniEstaSemana = new Date(hoy); iniEstaSemana.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+    const iniPasada = new Date(iniEstaSemana); iniPasada.setDate(iniEstaSemana.getDate() - 7);
+    const finPasada = new Date(iniEstaSemana); finPasada.setDate(iniEstaSemana.getDate() - 1);
+    return { desde: fmt(iniPasada), hasta: fmt(finPasada) };
+  }
+  if (p === 'mes') {
+    return { desde: fmt(new Date(hoy.getFullYear(),hoy.getMonth(),1)), hasta: fmt(hoy) };
+  }
+  return {
+    desde: document.getElementById('filtro-desde').value,
+    hasta: document.getElementById('filtro-hasta').value
+  };
+}
+
+// Supabase/PostgREST limita cada respuesta a 1000 filas sin importar el
+// &limit= que se pida; para rangos con más de 1000 tickets hay que paginar
+// con &offset= hasta agotar el rango o llegar a maxTotal.
+async function fetchPaginado(urlBase, headers, maxTotal) {
+  let todas = [];
+  let offset = 0;
+  const pageSize = 1000;
+  while (true) {
+    const sep = urlBase.includes('?') ? '&' : '?';
+    const r = await fetch(`${urlBase}${sep}limit=${pageSize}&offset=${offset}`, { headers });
+    if (!r.ok) {
+      if (offset === 0) throw new Error('Supabase respondió ' + r.status);
+      break;
+    }
+    const pagina = await r.json();
+    todas = todas.concat(pagina);
+    if (pagina.length < pageSize || todas.length >= maxTotal) break;
+    offset += pageSize;
+  }
+  return todas;
+}
+
+// ══ DATOS (Supabase o DEMO) ══
+async function cargarDatos() {
+  try {
+    const {desde, hasta} = getFechas();
+    actualizarPeriodoLabel();
+    const cajeroFiltro = document.getElementById('filtro-cajero')?.value || '';
+
+    // Query a Supabase: tabla 'tickets' del período
+    let query = `fecha_op=gte.${desde}&fecha_op=lte.${hasta}&order=created_at.desc`;
+    if(cajeroFiltro) query += `&cajero=eq.${encodeURIComponent(cajeroFiltro)}`;
+
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    // Los tickets cancelados (error del cajero, corregido con motivo y rastro
+    // en bitácora) se excluyen de raíz de todos los reportes/KPIs — no son
+    // una operación real, no deben contar como boleto emitido ni como ingreso.
+    const rows = (await fetchPaginado(`${SUPABASE_URL}/rest/v1/tickets?${query}`, headers, 15000))
+      .filter(o => o.estatus !== 'cancelado');
+
+    // Total de tickets del período SIN filtrar por estatus — antes solo se
+    // veían los ya cerrados en "N operaciones", así que un día con muchos
+    // tickets todavía abiertos parecía tener casi actividad nula.
+    DATOS.ticketsDia = rows.length;
+    // Detalle completo (abiertos + cerrados) para el drill-down de "Tickets
+    // del día" (Fase I) — el KPI cuenta todo el período, no solo lo cerrado.
+    DATOS.todosDetalle = rows.map(o => ({
+      folio: o.folio, tipo: o.tipo || 'normal', estatus: o.estatus,
+      cajero: o.cajero || '—', hora_entrada: o.hora_entrada || '—',
+      hora_salida: o.hora_salida || '', cajero_entrada: o.cajero_entrada || o.cajero || '—',
+      cajero_salida: o.cajero_salida || '',
+      importe: parseFloat(o.importe) || 0
+    }));
+    // Solo operaciones completadas (cobrado/perdido/cortesia) alimentan KPIs de ingresos
+    const completadas = rows.filter(o => o.estatus !== 'abierto');
+    DATOS.operaciones = completadas.map(o => ({
+      folio:        o.folio,
+      tipo:         o.tipo || 'normal',
+      estatus:      o.estatus,
+      cajero:       o.cajero || '—',
+      cajero_entrada: o.cajero_entrada || o.cajero || '—',
+      cajero_salida:  o.cajero_salida || o.cajero || '—',
+      hora_entrada: o.hora_entrada || '—',
+      hora_salida:  o.hora_salida || '—',
+      minutos:      o.minutos_estancia || 0,
+      // Recalculada desde hora_entrada, no leída de tickets.franja (columna
+      // histórica con el esquema anterior de 3 franjas) — así el desglose es
+      // correcto también sobre tickets viejos.
+      franja:       franjaLabelDeHora(o.hora_entrada),
+      importe:      parseFloat(o.importe) || 0,
+      fecha:        o.fecha_op || desde
+    }));
+    // Ocupación real = tickets con estatus 'abierto' AHORA MISMO, en una consulta
+    // aparte sin filtro de período (un auto que entró ayer y sigue en la plaza
+    // debe contar aunque el filtro de fecha esté en "Hoy"). Desglosado por tipo
+    // real (antes era un split falso 70/30).
+    // Se limita a fecha_op = HOY: la regla del negocio es que nadie se queda
+    // de un día para otro (se hace cierre de día todas las noches), así que
+    // un "abierto" con fecha_op de días anteriores es dato viejo que nunca
+    // se cerró bien (prueba, apagón, etc.), no un auto real todavía adentro
+    // — sin este filtro, esos residuos inflaban "Autos en plaza ahora" muy
+    // por encima de la realidad.
+    try {
+      const hoyStr = fmtLocal(new Date());
+      const rAbiertos = await fetch(`${SUPABASE_URL}/rest/v1/tickets?estatus=eq.abierto&fecha_op=eq.${hoyStr}&select=folio,tipo,cajero,cajero_entrada,hora_entrada&limit=1000`, {
+        headers: {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY}
+      });
+      const abiertos = (rAbiertos.ok ? await rAbiertos.json() : []).map(o => ({
+        ...o, cajero_entrada: o.cajero_entrada || o.cajero || '—'
+      }));
+      DATOS.autos_en_plaza  = abiertos.length;
+      // Guardamos el detalle (no solo el conteo) para el drill-down de
+      // Fase I — antes solo se traía "tipo", suficiente para contar pero no
+      // para listar folios al hacer clic en la tarjeta de Ocupación.
+      DATOS.abiertosDetalle = abiertos;
+      // Desglose real por los 4 tipos — antes "Normales" era "todo lo que
+      // no es preferencial", lo que mezclaba empleados/pensión ahí adentro.
+      // Ahora que tickets.tipo sí guarda empleado/pension (ver fix de
+      // syncEntrada/COBRO.tipo), se pueden separar de verdad.
+      DATOS.abiertos_normal   = abiertos.filter(o => o.tipo === 'normal').length;
+      DATOS.abiertos_pref     = abiertos.filter(o => o.tipo === 'preferencial').length;
+      DATOS.abiertos_empleado = abiertos.filter(o => o.tipo === 'empleado').length;
+      DATOS.abiertos_pension  = abiertos.filter(o => o.tipo === 'pension').length;
+    } catch (e) {
+      DATOS.autos_en_plaza = 0; DATOS.abiertos_normal = 0; DATOS.abiertos_pref = 0;
+      DATOS.abiertos_empleado = 0; DATOS.abiertos_pension = 0; DATOS.abiertosDetalle = [];
+    }
+
+    // Capacidad real de dim_plaza — antes se quedaba en el default (40) para
+    // siempre, sin importar lo configurado en Parámetros (bug detectado en
+    // QA: mostraba 40 aunque la plaza tenga 68 cajones reales).
+    try {
+      const rCap = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=capacidad_total&limit=1`, { headers });
+      const capRows = rCap.ok ? await rCap.json() : [];
+      if (capRows[0]?.capacidad_total) DATOS.capacidad = capRows[0].capacidad_total;
+    } catch (e) {}
+
+    // "Actividad — Período anterior": mismo número de días, inmediatamente
+    // antes del período seleccionado (Hoy→Ayer, Esta semana→semana pasada,
+    // Personalizado→mismo rango de días justo antes), para comparar el
+    // patrón de tickets por hora contra el período actual.
+    try {
+      const anterior = getFechasAnterior(desde, hasta);
+      const rAnt = await fetchPaginado(
+        `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${anterior.desde}&fecha_op=lte.${anterior.hasta}&select=hora_entrada,estatus`,
+        headers, 15000);
+      DATOS.todosDetalleAnterior = rAnt.filter(o => o.estatus !== 'cancelado');
+      const elSub = document.getElementById('actividad-anterior-sub');
+      if (elSub) elSub.textContent = anterior.desde === anterior.hasta
+        ? anterior.desde : (anterior.desde + ' a ' + anterior.hasta);
+    } catch (e) { DATOS.todosDetalleAnterior = []; }
+
+    // Poblar select de cajeros
+    const cajeros = [...new Set(rows.map(o=>o.cajero).filter(Boolean))];
+    const sel = document.getElementById('filtro-cajero');
+    if(sel) {
+      sel.innerHTML = '<option value="">Todos los cajeros</option>' +
+        cajeros.map(c=>`<option value="${c}">${c}</option>`).join('');
+    }
+
+    renderTodo();
+    document.getElementById('ultima-actualizacion').textContent =
+      'Actualizado: ' + new Date().toLocaleTimeString('es-MX');
+  } catch(e) {
+    console.warn('Supabase no disponible, usando datos demo:', e);
+    DATOS = generarDatosDemo();
+    renderTodo();
+    document.getElementById('ultima-actualizacion').textContent =
+      'Sin conexión · datos demo';
+  }
+}
+
+// ══ DATOS DEMO (reemplazar con Supabase queries) ══
+function generarDatosDemo() {
+  const ops = [];
+  const tipos = ['normal','normal','normal','preferencial','perdido','empleado','pension'];
+  const cajeros = ['Juan Pérez','María López','Carlos Ruiz'];
+  const hoy = new Date();
+  for (let i=0; i<28; i++) {
+    const t = tipos[Math.floor(Math.random()*tipos.length)];
+    const imp = t==='normal' ? 15*(1+Math.floor(Math.random()*4))
+               : t==='preferencial' ? 6*(1+Math.floor(Math.random()*3))
+               : t==='perdido' ? 150+15*(1+Math.floor(Math.random()*3))
+               : 0;
+    const h = 7 + Math.floor(Math.random()*15);
+    const hora_entrada = `${String(h).padStart(2,'0')}:${String(Math.floor(Math.random()*60)).padStart(2,'0')}`;
+    ops.push({
+      folio: 'UFC-'+(829+i),
+      tipo: t,
+      cajero: cajeros[Math.floor(Math.random()*cajeros.length)],
+      hora_entrada,
+      hora_salida:  `${String(h+1+Math.floor(Math.random()*2)).padStart(2,'0')}:${String(Math.floor(Math.random()*60)).padStart(2,'0')}`,
+      minutos: 15 + Math.floor(Math.random()*120),
+      franja: franjaLabelDeHora(hora_entrada),
+      importe: imp
+    });
+  }
+  return { operaciones: ops, autos_en_plaza: 12, abiertos_normal: 8, abiertos_pref: 4, capacidad: 40 };
+}
+
+// ══ RENDER TODO ══
+function renderTodo() {
+  const ops = DATOS.operaciones;
+  renderKPIs(ops);
+  renderFranjas();
+  renderOcupacion();
+  renderMix(ops);
+  renderRankingCajeros(DATOS.todosDetalle || ops);
+  renderTabla(ops);
+  renderActividadComparativa();
+}
+
+function renderKPIs(ops) {
+  const cobros  = ops.filter(o => o.importe > 0);
+  const total   = cobros.reduce((s,o) => s+o.importe, 0);
+  const perdidos= ops.filter(o => o.tipo==='perdido');
+  const pTotal  = perdidos.reduce((s,o) => s+o.importe, 0);
+  const ticket  = cobros.length ? total/cobros.length : 0;
+  const minProm = ops.filter(o=>o.minutos>0).reduce((s,o,_,a)=>s+o.minutos/a.length,0);
+
+  document.getElementById('kpi-ingresos').textContent    = fmt$(total);
+  document.getElementById('kpi-ingresos-sub').textContent= cobros.length + ' cobrados';
+  // "↑ vs ayer" nunca se calculó contra datos reales — quedó fijo en el HTML
+  // desde el principio, mostrando "subiendo" sin importar el desempeño real
+  // (bug detectado en QA). Corporativo ya lo oculta por la misma razón.
+  document.getElementById('kpi-ingresos-delta').style.display = 'none';
+  document.getElementById('kpi-tickets-dia').textContent = DATOS.ticketsDia || 0;
+  document.getElementById('kpi-perdidos').textContent    = perdidos.length;
+  document.getElementById('kpi-perdidos-sub').textContent= fmt$(pTotal) + ' en penalizaciones';
+  document.getElementById('kpi-ticket').textContent      = fmt$(ticket);
+  document.getElementById('kpi-ticket-sub').textContent  = 'Tiempo prom: ' + Math.round(minProm) + ' min';
+}
+
+// Franja de "vistazo rápido" arriba de la ventana pop de detalle — a
+// diferencia de una versión anterior que siempre mostraba los totales
+// globales del tablero (confuso: al entrar a "Normales" seguía diciendo el
+// total de TODA la plaza), esta se calcula sobre el subconjunto EXACTO que
+// se está mostrando en cada drill (mismo arreglo `rows` que llena la tabla).
+function renderMiniStatsFor(rows) {
+  const el = document.getElementById('drill-ministats');
+  if (!el) return;
+  const total = rows.length;
+  const conEstatus = rows.some(o => o.estatus);
+  const cerrados = rows.filter(o => o.estatus && o.estatus !== 'abierto').length;
+  const monto = rows.reduce((s,o)=>s+(Number(o.importe)||0),0);
+  el.innerHTML = `<span>🎫 ${total} ticket${total===1?'':'s'}</span>` +
+    (conEstatus ? `<span style="color:#3aa757">✅ ${cerrados} cerrados</span>` : '') +
+    `<span style="color:var(--gold)">💰 ${fmt$(monto)}</span>`;
+}
+
+// Franja horaria: 3 bloques (05:00–22:00) — fuera de ese rango no hay
+// franja asignada. Recalculada EN VIVO desde hora_entrada — no se lee
+// tickets.franja (columna histórica con esquemas anteriores), así el
+// widget es correcto también sobre datos viejos, sin depender de migración.
+const FRANJAS_ADMIN = [
+  { key:'f1', test:h => h>=5 && h<10 },
+  { key:'f2', test:h => h>=10 && h<17 },
+  { key:'f3', test:h => h>=17 && h<22 }
+];
+function franjaKeyDeOp(o) {
+  const h = parseInt((o.hora_entrada||'0').split(':')[0]);
+  const f = FRANJAS_ADMIN.find(f => f.test(h));
+  return f ? f.key : null;
+}
+const FRANJA_ADMIN_LABEL = {f1:'05:00–10:00',f2:'10:00–17:00',f3:'17:00–22:00'};
+function franjaLabelDeHora(horaStr) {
+  const h = parseInt((horaStr||'').split(':')[0]);
+  if (isNaN(h)) return '—';
+  const f = FRANJAS_ADMIN.find(f => f.test(h));
+  return f ? FRANJA_ADMIN_LABEL[f.key] : '—';
+}
+const FRANJA_ADMIN_COLOR = {f1:'#0d2340',f2:'#0d2340',f3:'#F5A623'};
+
+// Usa DATOS.todosDetalle (abiertos + cerrados), NO solo DATOS.operaciones
+// (cerrados) — antes esta tarjeta y "Actividad" (número de tickets por
+// hora, que sí cuenta todo) no reconciliaban: la suma de horas de una
+// franja en Actividad nunca coincidía con el conteo de esa franja aquí.
+// El importe sigue siendo el ingreso real (los abiertos aportan $0).
+function renderFranjas() {
+  const todos = DATOS.todosDetalle || [];
+  const montos = {f1:0,f2:0,f3:0};
+  const cuentas = {f1:0,f2:0,f3:0};
+  todos.forEach(o => { const k = franjaKeyDeOp(o); if (k) { montos[k] += (Number(o.importe)||0); cuentas[k]++; } });
+  const total = todos.length || 1;
+  const el = document.getElementById('franja-bars');
+  el.innerHTML = ['f1','f2','f3'].map(k => {
+    const cnt = cuentas[k];
+    const pct = Math.round(cnt/total*100);
+    const color = FRANJA_ADMIN_COLOR[k];
+    return `<div onclick="drillFranja('${k}')" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px">
+        <span style="font-weight:700;color:${color}">${FRANJA_ADMIN_LABEL[k]}</span>
+        <span style="color:var(--muted)">${cnt} ops · ${fmt$(montos[k])}</span>
+        <span style="font-weight:700">${pct}%</span>
+      </div>
+      <div style="background:#eaeef4;border-radius:99px;height:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;border-radius:99px;background:${color};transition:width .5s"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOcupacion() {
+  // Tope en 100%: tickets "abierto" sin cerrar de días pasados (residuo de
+  // pruebas) pueden inflar autos_en_plaza por encima de la capacidad real.
+  const pct = Math.min(100, Math.round(DATOS.autos_en_plaza / DATOS.capacidad * 100));
+  document.getElementById('kpi-ocupacion').textContent     = pct+'%';
+  document.getElementById('kpi-ocupacion-num').textContent = DATOS.autos_en_plaza;
+  document.getElementById('kpi-ocupacion-sub').textContent = 'de '+DATOS.capacidad+' lugares';
+  document.getElementById('gauge-pct').textContent  = pct+'%';
+  document.getElementById('gauge-sub').textContent  = DATOS.autos_en_plaza+' / '+DATOS.capacidad;
+  document.getElementById('gauge-fill').style.width = pct+'%';
+  document.getElementById('ocu-normal').textContent   = DATOS.abiertos_normal || 0;
+  document.getElementById('ocu-pref').textContent     = DATOS.abiertos_pref || 0;
+  document.getElementById('ocu-empleado').textContent = DATOS.abiertos_empleado || 0;
+  document.getElementById('ocu-pension').textContent  = DATOS.abiertos_pension || 0;
+  // Catálogo de estatus IN/OUT (documento de dimensiones): IN = autos que
+  // siguen dentro ahora mismo; OUT = tickets del período que ya pasaron por
+  // el escáner de salida (cerrados), sin importar el tipo de tarifa.
+  document.getElementById('stat-in').textContent  = DATOS.autos_en_plaza || 0;
+  document.getElementById('stat-out').textContent = (DATOS.operaciones||[]).length;
+}
+
+// Desglose Ticket (Fase G, tablero ampliado): Pagado/Preferente/Perdido/
+// Cortesía/Pensión/Empleado. "Cortesía" ya NO se puede leer del campo tipo
+// (desde el fix de esta sesión que dejó de sobrescribirlo a 'cortesia' para
+// preservar empleado/pensión) — se deriva en vivo como normal/preferencial
+// con importe=0 (tolerancia ≤15 min), que es justo lo que el cliente pidió
+// poder contar como dimensión aparte del tipo.
+const DESGLOSE_BUCKETS = {
+  pagado:       { label:'Normal',             color:'#0d2340', filter:o=>o.tipo==='normal' && Number(o.importe)>0 },
+  preferencial: { label:'Preferente',        color:'#0d2340', filter:o=>o.tipo==='preferencial' && Number(o.importe)>0 },
+  perdido:      { label:'Boleto perdido',    color:'#D93025', filter:o=>o.tipo==='perdido' },
+  cortesia:     { label:'Cortesía (≤15min)', color:'#888',    filter:o=>(o.tipo==='normal'||o.tipo==='preferencial') && Number(o.importe)===0 },
+  pension:      { label:'Pensión',           color:'#3aa757', filter:o=>o.tipo==='pension' },
+  empleado:     { label:'Empleado',          color:'#0d2340', filter:o=>o.tipo==='empleado' }
+};
+function renderMix(ops) {
+  const total = ops.length || 1;
+  const el = document.getElementById('mix-bars');
+  el.innerHTML = Object.entries(DESGLOSE_BUCKETS).map(([key,b]) => {
+    const subset = ops.filter(b.filter);
+    const cnt = subset.length;
+    const pct = Math.round(cnt/total*100);
+    const ing = subset.reduce((s,o)=>s+(Number(o.importe)||0),0);
+    return `<div onclick="drillTipo('${key}')" style="cursor:pointer">
+      <div style="display:grid;grid-template-columns:1fr 50px 85px 38px;gap:6px;font-size:10px;margin-bottom:2px;align-items:baseline">
+        <span style="font-weight:700;color:${b.color}">${b.label}</span>
+        <span style="color:var(--muted);text-align:right">${cnt} ops</span>
+        <span style="color:var(--muted);text-align:right">${fmt$(ing)}</span>
+        <span style="font-weight:700;text-align:right">${pct}%</span>
+      </div>
+      <div style="background:#eaeef4;border-radius:99px;height:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;border-radius:99px;background:${b.color};transition:width .5s"></div>
+      </div>
+    </div>`;
+  }).join('');
+  // Pagado / No pagado: dimensión aparte del tipo, y aparte del ciclo de
+  // vida — solo aplica a lo YA CERRADO (ops = DATOS.operaciones excluye
+  // 'abierto'). Se muestra también "Abiertos" para que quede claro por qué
+  // Pagados+No pagados no siempre coincide con "Tickets del día" (que sí
+  // cuenta los abiertos) — antes esa diferencia se veía como datos que no
+  // cuadraban, cuando en realidad es la regla: Abiertos+Cerrados+Perdidos =
+  // 100% de los tickets del período.
+  const pagados = ops.filter(o=>Number(o.importe)>0).length;
+  const noPagados = ops.length - pagados;
+  const abiertosPeriodo = (DATOS.ticketsDia || 0) - ops.length;
+  const elPagos = document.getElementById('desglose-pagos');
+  if (elPagos) elPagos.innerHTML = `
+    <div style="background:#eaeef4;border-radius:6px;padding:4px 8px;text-align:center;flex:1;cursor:pointer" onclick="drillPagados(true)">
+      <div style="font-size:14px;font-weight:900;color:#3aa757">${pagados}</div>
+      <div style="font-size:8px;color:var(--muted);text-transform:uppercase;font-weight:700">Pagados</div>
+    </div>
+    <div style="background:#eaeef4;border-radius:6px;padding:4px 8px;text-align:center;flex:1;cursor:pointer" onclick="drillPagados(false)">
+      <div style="font-size:14px;font-weight:900;color:#888">${noPagados}</div>
+      <div style="font-size:8px;color:var(--muted);text-transform:uppercase;font-weight:700">No pagados</div>
+    </div>
+    <div style="background:#eaeef4;border-radius:6px;padding:4px 8px;text-align:center;flex:1" title="Siguen abiertos en el período — no entran en Pagados/No pagados">
+      <div style="font-size:14px;font-weight:900;color:#0d2340">${abiertosPeriodo}</div>
+      <div style="font-size:8px;color:var(--muted);text-transform:uppercase;font-weight:700">Abiertos</div>
+    </div>`;
+}
+
+// Tabla de movimientos unificada para TODOS los drill-down (Fase de detalle
+// enriquecido): Folio/Tipo/Entrada/Salida/Cajero entrada/Cajero salida/
+// Importe/Estatus (IN=todavía en la plaza, OUT=ya salió) — antes cada drill
+// tenía su propio subconjunto de columnas (algunas solo folio/tipo/cajero/
+// entrada), inconsistente entre sí.
+const TIPO_LABEL_MOV = {normal:'Normal',preferencial:'Preferencial',perdido:'Boleto perdido',cortesia:'Cortesía',empleado:'Empleado',pension:'Pensión'};
+function movimientosTablaHTML(rows) {
+  if (!rows.length) return '<div style="padding:20px;color:var(--muted)">Sin movimientos</div>';
+  return `<div class="tabla-wrap"><table>
+      <thead><tr>
+        <th>Folio</th><th>Tipo</th><th>Entrada</th><th>Salida</th>
+        <th>Cajero entrada</th><th>Cajero salida</th>
+        <th style="text-align:right">Importe</th><th>Estatus</th>
+      </tr></thead>
+      <tbody>${rows.map(o => {
+        const esAbierto = o.estatus ? o.estatus==='abierto' : !o.hora_salida;
+        const io = esAbierto ? 'IN' : 'OUT';
+        const ioColor = esAbierto ? '#0d2340' : '#3aa757';
+        return `<tr onclick="drillTicket('${o.folio}')">
+          <td><span style="font-family:monospace;font-weight:700">${o.folio}</span></td>
+          <td>${TIPO_LABEL_MOV[o.tipo]||o.tipo||'—'}</td>
+          <td>${o.hora_entrada||'—'}</td>
+          <td>${o.hora_salida||'—'}</td>
+          <td>${o.cajero_entrada||o.cajero||'—'}</td>
+          <td>${o.cajero_salida||'—'}</td>
+          <td style="text-align:right;font-weight:700;color:${o.importe?'var(--gold)':'var(--muted)'}">${o.importe?fmt$(o.importe):'$0.00'}</td>
+          <td><span class="badge" style="background:${ioColor}22;color:${ioColor}">${io}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+}
+
+function drillPagados(esPagado) {
+  const ops = DATOS.operaciones.filter(o => (Number(o.importe)>0) === esPagado);
+  const panel = document.getElementById('drill-panel');
+  document.getElementById('drill-title').textContent = esPagado ? '💰 Pagados' : '🚫 No pagados';
+  document.getElementById('drill-path').textContent = 'Inicio → ' + (esPagado?'Pagados':'No pagados');
+  renderMiniStatsFor(ops);
+  document.getElementById('drill-content').innerHTML = movimientosTablaHTML(ops);
+  panel.classList.add('open');
+}
+
+// Rango de fechas del "período anterior": mismo número de días que
+// [desde,hasta], inmediatamente antes — funciona para cualquier tipo de
+// período (Hoy→Ayer, Esta semana→semana pasada, Personalizado→mismo tamaño).
+function getFechasAnterior(desde, hasta) {
+  const d1 = new Date(desde+'T12:00:00');
+  const d2 = new Date(hasta+'T12:00:00');
+  const dias = Math.round((d2-d1)/86400000) + 1;
+  if (dias <= 7) {
+    // Períodos de una semana o menos (Hoy, un día específico, Esta semana):
+    // se compara contra el mismo rango pero exactamente 7 días antes, para
+    // que cada día caiga contra su mismo día de la semana pasada (lunes vs
+    // lunes, martes vs martes) en vez de contra el día inmediato anterior.
+    const iniAnterior = new Date(d1); iniAnterior.setDate(iniAnterior.getDate()-7);
+    const finAnterior = new Date(d2); finAnterior.setDate(finAnterior.getDate()-7);
+    return { desde: fmtLocal(iniAnterior), hasta: fmtLocal(finAnterior) };
+  }
+  // Períodos más largos (mes, personalizado): mismo tamaño, inmediatamente
+  // antes — aquí no aplica una alineación por día de la semana.
+  const finAnterior = new Date(d1); finAnterior.setDate(finAnterior.getDate()-1);
+  const iniAnterior = new Date(finAnterior); iniAnterior.setDate(iniAnterior.getDate()-(dias-1));
+  return { desde: fmtLocal(iniAnterior), hasta: fmtLocal(finAnterior) };
+}
+
+// Actividad — Comparativo: número de tickets por hora del período actual
+// (barras, DATOS.todosDetalle) superpuesto con el período anterior
+// comparable (línea, DATOS.todosDetalleAnterior) en una sola gráfica SVG,
+// misma escala para ambas series — reemplaza las dos gráficas separadas de
+// antes, que obligaban a comparar de memoria entre dos tarjetas.
+function renderActividadComparativa() {
+  const el = document.getElementById('actividad-comparativa');
+  if (!el) return;
+  const horas = Array.from({length:24}, (_,i)=>i);
+  const actual   = DATOS.todosDetalle || [];
+  const anterior = DATOS.todosDetalleAnterior || [];
+  const cActual   = horas.map(h => actual.filter(o => parseInt((o.hora_entrada||'-1').split(':')[0])===h).length);
+  const cAnterior = horas.map(h => anterior.filter(o => parseInt((o.hora_entrada||'-1').split(':')[0])===h).length);
+  const max = Math.max(...cActual, ...cAnterior, 1);
+
+  const slot = 10, plotTop = 12, plotBottom = 82, plotH = plotBottom - plotTop;
+  const barW = slot * 0.6;
+
+  const bars = horas.map((h,i) => {
+    const x = i*slot + (slot-barW)/2;
+    const bh = cActual[i]/max*plotH;
+    const y = plotBottom - bh;
+    const label = cActual[i] ? `<text x="${x+barW/2}" y="${y-1.5}" font-size="4.5" text-anchor="middle" fill="var(--accent)" font-weight="700">${cActual[i]}</text>` : '';
+    return `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" rx="1" fill="var(--accent)" style="cursor:pointer" onclick="drillHora(${h})"><title>${h}:00 · ${cActual[i]} tickets (período actual)</title></rect>${label}`;
+  }).join('');
+
+  const puntos = horas.map((h,i) => ({
+    x: i*slot + slot/2,
+    y: plotBottom - (cAnterior[i]/max*plotH),
+    v: cAnterior[i], h
+  }));
+  const linePath = puntos.map((p,i) => (i===0?'M':'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
+  const dots = puntos.map(p =>
+    `<circle cx="${p.x}" cy="${p.y}" r="1.6" fill="#F5A623"><title>${p.h}:00 · ${p.v} tickets (período anterior)</title></circle>`
+  ).join('');
+
+  const xLabels = horas.map((h,i) =>
+    `<text x="${i*slot+slot/2}" y="92" font-size="4" text-anchor="middle" fill="var(--muted)">${h}</text>`
+  ).join('');
+
+  el.innerHTML = `<svg viewBox="0 0 240 96" style="width:100%;height:auto;display:block">
+      ${bars}
+      <path d="${linePath}" fill="none" stroke="#F5A623" stroke-width="1.2"/>
+      ${dots}
+      ${xLabels}
+    </svg>`;
+}
+function drillHora(h) {
+  const todos = DATOS.todosDetalle || [];
+  const ops = todos.filter(o => parseInt((o.hora_entrada||'-1').split(':')[0])===h);
+  const panel = document.getElementById('drill-panel');
+  document.getElementById('drill-title').textContent = '🕐 Tickets a las '+h+':00';
+  document.getElementById('drill-path').textContent = 'Inicio → Actividad → '+h+':00';
+  renderMiniStatsFor(ops);
+  document.getElementById('drill-content').innerHTML = movimientosTablaHTML(ops);
+  panel.classList.add('open');
+}
+
+function renderRankingCajeros(ops) {
+  const cajeros = {};
+  ops.forEach(o => {
+    const nom = o.cajero_entrada || o.cajero;
+    if (!cajeros[nom]) cajeros[nom] = {ops:0,total:0};
+    cajeros[nom].ops++;
+    cajeros[nom].total += o.importe;
+  });
+  // Con tickets aún abiertos (sin cobrar) el total es $0 para todos — en ese
+  // caso se ordena y se dimensiona la barra por número de operaciones, para
+  // que la tarjeta no se vea vacía mientras no haya cortes cerrados.
+  const hayIngresos = Object.values(cajeros).some(d => d.total > 0);
+  const sorted = Object.entries(cajeros).sort((a,b) =>
+    hayIngresos ? (b[1].total-a[1].total) : (b[1].ops-a[1].ops));
+  const max = (hayIngresos ? sorted[0]?.[1]?.total : sorted[0]?.[1]?.ops) || 1;
+  const el = document.getElementById('cajero-ranking');
+  if (!sorted.length) { el.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px 0">Sin operaciones registradas hoy</div>'; return; }
+  el.innerHTML = sorted.map(([nom,d],i) => `
+    <div class="cajero-row" onclick="drillCajero('${nom}')">
+      <div class="cajero-num">${i+1}</div>
+      <div class="cajero-name">${nom}<br>
+        <span style="font-size:11px;color:var(--muted);font-weight:400">${d.ops} operaciones</span>
+      </div>
+      <div class="cajero-bar">
+        <div class="cajero-bar-bg">
+          <div class="cajero-bar-fill" style="width:${(hayIngresos ? d.total : d.ops)/max*100}%"></div>
+        </div>
+      </div>
+      <div class="cajero-val">${fmt$(d.total)}</div>
+    </div>`).join('');
+}
+
+function renderTabla(ops) {
+  const el = document.getElementById('tabla-ops');
+  const em = document.getElementById('tabla-empty');
+  if (!ops.length) { el.innerHTML=''; em.style.display='block'; return; }
+  em.style.display='none';
+  const badgeClass = {normal:'b-normal',preferencial:'b-pref',perdido:'b-perdido',cortesia:'b-cortesia'};
+  const badgeLabel = {normal:'Normal',preferencial:'Pref',perdido:'Perdido',cortesia:'Cortesía'};
+  el.innerHTML = ops.map(o => `
+    <tr onclick="drillTicket('${o.folio}')">
+      <td><span style="font-family:monospace;font-weight:700">${o.folio}</span></td>
+      <td><span class="badge ${badgeClass[o.tipo]||'b-normal'}">${badgeLabel[o.tipo]||o.tipo}</span></td>
+      <td>${o.cajero}</td>
+      <td>${o.hora_entrada}</td>
+      <td>${o.hora_salida||'—'}</td>
+      <td>${o.minutos||'—'}</td>
+      <td><span style="font-size:11px;color:var(--muted)">${o.franja}</span></td>
+      <td style="text-align:right;font-weight:700;color:${o.importe?'var(--gold)':'var(--muted)'}">
+        ${o.importe?fmt$(o.importe):'$0.00'}
+      </td>
+    </tr>`).join('');
+}
+
+// ══ DRILL-DOWN ══
+function drillDown(tipo) {
+  const panel = document.getElementById('drill-panel');
+  const cont  = document.getElementById('drill-content');
+  const title = document.getElementById('drill-title');
+  const path  = document.getElementById('drill-path');
+  _drillActual = tipo;
+  panel.classList.add('open');
+  const ops = DATOS.operaciones;
+
+  const titulos = {
+    ingresos: '💰 Detalle de ingresos',
+    ocupacion: '🅿 Análisis de ocupación',
+    boletos_perdidos: '⚠ Boletos perdidos',
+    ticket_promedio: '📊 Análisis de ticket promedio',
+    tickets_dia: '🎫 Tickets del día (abiertos + cerrados)'
+  };
+  title.textContent = titulos[tipo] || tipo;
+  path.textContent  = 'Inicio → ' + (titulos[tipo]||tipo);
+
+  if (tipo === 'boletos_perdidos') {
+    const perdidos = ops.filter(o=>o.tipo==='perdido');
+    renderMiniStatsFor(perdidos);
+    cont.innerHTML = movimientosTablaHTML(perdidos);
+  } else if (tipo === 'ingresos') {
+    // Breakdown por tipo
+    const tipos = ['normal','preferencial','perdido'];
+    renderMiniStatsFor(ops.filter(o=>o.importe>0));
+    cont.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+      ${tipos.map(t=>{
+        const sub = ops.filter(o=>o.tipo===t);
+        const tot = sub.reduce((s,o)=>s+o.importe,0);
+        const colors={normal:'#0d2340',preferencial:'#0d2340',perdido:'#D93025'};
+        const labels={normal:'Normal',preferencial:'Preferencial',perdido:'Perdido'};
+        return `<div style="background:var(--bg);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:11px;font-weight:700;color:${colors[t]};margin-bottom:4px">${labels[t]}</div>
+          <div style="font-size:24px;font-weight:900">${fmt$(tot)}</div>
+          <div style="font-size:11px;color:var(--muted)">${sub.length} ops</div>
+        </div>`;
+      }).join('')}</div>`;
+  } else if (tipo === 'ocupacion') {
+    const abiertos = DATOS.abiertosDetalle || [];
+    renderMiniStatsFor(abiertos);
+    cont.innerHTML = movimientosTablaHTML(abiertos);
+  } else if (tipo === 'ticket_promedio') {
+    const cobros = ops.filter(o=>o.importe>0);
+    renderMiniStatsFor(cobros);
+    cont.innerHTML = movimientosTablaHTML(cobros);
+  } else if (tipo === 'tickets_dia') {
+    const todos = DATOS.todosDetalle || [];
+    renderMiniStatsFor(todos);
+    cont.innerHTML = movimientosTablaHTML(todos);
+  }
+}
+
+function drillFranja(key) {
+  // Mismo origen (todosDetalle) que renderFranjas(), para que el detalle
+  // que se abre coincida exactamente con el conteo mostrado en la tarjeta.
+  const ops = (DATOS.todosDetalle||[]).filter(o => franjaKeyDeOp(o) === key);
+  drillGenerico('Franja: '+(FRANJA_ADMIN_LABEL[key]||key), ops);
+}
+
+function drillTipo(key) {
+  const b = DESGLOSE_BUCKETS[key];
+  if (!b) return;
+  const ops = DATOS.operaciones.filter(b.filter);
+  drillGenerico('Desglose: '+b.label, ops);
+}
+
+function drillCajero(cajero) {
+  const ops = (DATOS.todosDetalle||[]).filter(o=>(o.cajero_entrada||o.cajero)===cajero);
+  drillGenerico('Cajero: '+cajero, ops);
+}
+
+function drillTicket(folio) {
+  // Un folio abierto (todavía en la plaza) no está en DATOS.operaciones
+  // (solo guarda cerrados) — se busca también en abiertosDetalle/todosDetalle
+  // para que las filas de esas tablas de drill-down también sean clickeables.
+  const op = DATOS.operaciones.find(o=>o.folio===folio)
+    || (DATOS.abiertosDetalle||[]).find(o=>o.folio===folio)
+    || (DATOS.todosDetalle||[]).find(o=>o.folio===folio);
+  if (!op) return;
+  const panel = document.getElementById('drill-panel');
+  const cont  = document.getElementById('drill-content');
+  document.getElementById('drill-title').textContent = '🎫 Ticket '+folio;
+  document.getElementById('drill-path').textContent  = 'Inicio → Operaciones → '+folio;
+  _drillActual = 'ticket';
+  panel.classList.add('open');
+  const labels={normal:'Normal',preferencial:'Preferencial',perdido:'Boleto Perdido',cortesia:'Cortesía',empleado:'Empleado',pension:'Pensión'};
+  const esAbierto = op.estatus ? op.estatus==='abierto' : !op.hora_salida;
+  const campos = [['Folio',folio],['Tipo',labels[op.tipo]||op.tipo],
+    ['Estatus', esAbierto ? 'IN (en plaza)' : 'OUT (ya salió)'],
+    ['Entrada',op.hora_entrada],['Salida',op.hora_salida||'—'],
+    ['Cajero entrada',op.cajero_entrada||op.cajero||'—'],
+    ['Cajero salida',op.cajero_salida||'—']];
+  if (op.franja) campos.push(['Franja',op.franja]);
+  if (op.minutos !== undefined) campos.push(['Minutos',op.minutos||'—']);
+  campos.push(['Importe', op.importe!=null ? fmt$(op.importe) : '—']);
+  cont.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      ${campos.map(([k,v])=>`<div style="background:var(--bg);border-radius:8px;padding:12px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase">${k}</div>
+          <div style="font-size:16px;font-weight:800;margin-top:4px">${v}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// Tabla de tickets abiertos (en plaza ahora) — usada por el drill de
+// "Ocupación" y de las 4 tarjetas Normales/Preferenciales/Empleados/Pensión.
+function tablaAbiertosHTML(rows) {
+  return movimientosTablaHTML(rows);
+}
+function drillOcupacionTipo(tipo) {
+  const labels={normal:'Normales',preferencial:'Preferenciales',empleado:'Empleados',pension:'Pensión'};
+  const rows = (DATOS.abiertosDetalle||[]).filter(o=>o.tipo===tipo);
+  const panel = document.getElementById('drill-panel');
+  document.getElementById('drill-title').textContent = '🅿 En plaza — '+(labels[tipo]||tipo);
+  document.getElementById('drill-path').textContent  = 'Inicio → Ocupación → '+(labels[tipo]||tipo);
+  _drillActual = 'ocupacion_'+tipo;
+  panel.classList.add('open');
+  renderMiniStatsFor(rows);
+  document.getElementById('drill-content').innerHTML = movimientosTablaHTML(rows);
+}
+
+function drillGenerico(titulo, ops) {
+  const panel = document.getElementById('drill-panel');
+  const cont  = document.getElementById('drill-content');
+  document.getElementById('drill-title').textContent = titulo;
+  document.getElementById('drill-path').textContent  = 'Inicio → '+titulo;
+  panel.classList.add('open');
+  renderMiniStatsFor(ops);
+  cont.innerHTML = movimientosTablaHTML(ops);
+}
+
+function cerrarDrill() {
+  document.getElementById('drill-panel').classList.remove('open');
+  _drillActual = null;
+}
+
+// ══ EXPORT CSV ══
+function exportarCSV() {
+  const ops = DATOS.operaciones;
+  const hoy = fmtLocal(new Date());
+  const header = 'Folio,Tipo,Cajero,Entrada,Salida,Minutos,Franja,Importe,Plaza';
+  const rows = ops.map(o =>
+    [o.folio,o.tipo,o.cajero,o.hora_entrada,o.hora_salida||'',o.minutos||'',o.franja,o.importe,'ONLYPARK'].join(',')
+  );
+  const csv  = '\uFEFF' + [header,...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ONLYPARK_admin_'+hoy+'.csv';
+  a.click();
+  showToast('CSV exportado · '+ops.length+' registros');
+}
+
+// ══ BITÁCORA ══
+let BITACORA_ACTUAL = [];
+const ACCION_LABELS = {
+  login:'🔑 Login', cobro:'💰 Cobro', cancelacion:'❌ Cancelación',
+  arqueo:'🧮 Arqueo', relevo:'🔄 Relevo', cierre_dia:'🌙 Cierre de día',
+  reimpresion_comprobante:'🖨 Reimpresión comprobante', atajo_teclado:'⌨️ Atajo de teclado',
+  folio_leido:'👁 Folio leído', seleccion:'☑️ Selección', impresion:'🖨 Impresión', vista_pantalla:'🖥 Vista de pantalla',
+  correccion_manual:'🛠 Corrección manual', cierre_automatico:'⏱ Cierre automático'
+};
+function accionLabel(a) { return ACCION_LABELS[a] || a || '—'; }
+function fmtFechaHoraMX(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('es-MX', {
+    timeZone:'America/Mexico_City', day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  });
+}
+let BIT_ADM_INICIADO = false;
+async function buscarBitacora() {
+  const cont = document.getElementById('bitacora-tabla');
+  cont.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">Cargando…</div>';
+  try {
+    const desde = document.getElementById('bit-desde').value;
+    const hasta = document.getElementById('bit-hasta').value;
+    const horaDesde = document.getElementById('bit-hora-desde').value;
+    const horaHasta = document.getElementById('bit-hora-hasta').value;
+    const usuario = document.getElementById('bit-usuario').value.trim();
+    const accion = document.getElementById('bit-accion').value;
+
+    // Los límites de día se arman en hora de México (UTC-6, sin horario de
+    // verano desde 2022) para que "Desde/Hasta" filtren por el día real
+    // operativo, no por el día en UTC que trae created_at.
+    let query = 'order=created_at.desc';
+    if (desde) query += `&created_at=gte.${encodeURIComponent(desde+'T00:00:00-06:00')}`;
+    if (hasta) query += `&created_at=lte.${encodeURIComponent(hasta+'T23:59:59-06:00')}`;
+    if (accion) query += `&accion=eq.${encodeURIComponent(accion)}`;
+    if (usuario) query += `&usuario=ilike.*${encodeURIComponent(usuario)}*`;
+
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    let rows = await fetchPaginado(`${SUPABASE_URL}/rest/v1/bitacora?${query}`, headers, 5000);
+
+    // El filtro de hora (rango del día, sin importar la fecha) se aplica del
+    // lado del cliente — PostgREST no tiene forma directa de comparar solo
+    // la parte de hora de un timestamptz contra un rango.
+    if (horaDesde || horaHasta) {
+      const aMin = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+      const hd = horaDesde ? aMin(horaDesde) : 0;
+      const hh = horaHasta ? aMin(horaHasta) : 1439;
+      rows = rows.filter(r => {
+        const mx = new Date(r.created_at).toLocaleString('en-US', {timeZone:'America/Mexico_City', hour12:false, hour:'2-digit', minute:'2-digit'});
+        const [h,m] = mx.split(':').map(Number);
+        const mins = h*60+m;
+        return mins>=hd && mins<=hh;
+      });
+    }
+
+    BITACORA_ACTUAL = rows;
+    renderBitacora(rows);
+  } catch (e) {
+    cont.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">No se pudo cargar la bitácora</div>';
+  }
+}
+function renderBitacora(rows) {
+  document.getElementById('bitacora-count').textContent = rows.length+' registro'+(rows.length===1?'':'s');
+  const cont = document.getElementById('bitacora-tabla');
+  if (!rows.length) {
+    cont.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted)">Sin resultados para el filtro seleccionado</div>';
+    return;
+  }
+  cont.innerHTML = `<div class="tabla-wrap"><table>
+    <thead><tr><th>ID</th><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>IP</th><th>Plaza</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td>${r.id}</td>
+      <td style="white-space:nowrap">${fmtFechaHoraMX(r.created_at)}</td>
+      <td>${escHtmlAttr(r.usuario)||'—'}</td>
+      <td>${escHtmlAttr(accionLabel(r.accion))}</td>
+      <td style="font-family:monospace;font-size:11px;max-width:340px;white-space:pre-wrap">${r.detalle ? escHtmlAttr(JSON.stringify(r.detalle)) : '—'}</td>
+      <td style="font-family:monospace;font-size:11px">${escHtmlAttr(r.ip)||'—'}</td>
+      <td>${escHtmlAttr(r.plaza_id)||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+function csvEscapeBitacora(v) {
+  const s = String(v==null?'':v);
+  return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+}
+function exportarBitacoraCSV() {
+  const rows = BITACORA_ACTUAL;
+  if (!rows.length) { showToast('No hay registros para exportar'); return; }
+  const header = ['ID','Fecha y hora (MX)','Usuario','Acción','Detalle','IP','Plaza'].join(',');
+  const lines = rows.map(r => [
+    r.id, fmtFechaHoraMX(r.created_at), r.usuario||'', r.accion||'', r.detalle?JSON.stringify(r.detalle):'', r.ip||'', r.plaza_id||''
+  ].map(csvEscapeBitacora).join(','));
+  const csv = '\uFEFF' + [header,...lines].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ONLYPARK_bitacora_'+fmtLocal(new Date())+'.csv';
+  a.click();
+  showToast('CSV exportado · '+rows.length+' registros');
+}
+
+// ══ GESTIÓN MANUAL DE TICKETS (cancelar con motivo + captura manual) ══
+let GM_TICKET_ACTUAL = null;
+function abrirGestionManual() {
+  logBitacora('vista_pantalla', { pantalla: 'Gestión manual de tickets' });
+  document.getElementById('modal-gestion-manual').classList.add('open');
+  document.getElementById('gm-folio-buscar').value = '';
+  document.getElementById('gm-cancelar-detalle').innerHTML = '';
+  GM_TICKET_ACTUAL = null;
+  document.getElementById('gm-fecha').value = fmtLocal(new Date());
+}
+function cerrarGestionManual() {
+  document.getElementById('modal-gestion-manual').classList.remove('open');
+}
+
+// ══ AVISO A OPERADORES ══ — mensaje que el Admin manda a un operador
+// específico o a todos; se lo muestra la tablet la próxima vez que lo use
+// (ver revisarAvisosOperador() en operador.html). Pensado sobre todo
+// para pedirles "presiona Actualizar app" cuando hay una versión nueva,
+// pero sirve para cualquier mensaje corto.
+async function abrirAvisoOperador() {
+  logBitacora('vista_pantalla', { pantalla: 'Chat con operadores' });
+  const sel = document.getElementById('aviso-destinatario');
+  sel.innerHTML = '<option value="">Todos los operadores</option>';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cajeros?select=nombre&activo=eq.true&order=nombre.asc`, { headers: SB_HEADERS_PARAM });
+    const cajeros = r.ok ? await r.json() : [];
+    sel.innerHTML += cajeros.map(c => `<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  } catch (e) {}
+  document.getElementById('aviso-mensaje').value = '';
+  document.getElementById('modal-aviso-operador').classList.add('open');
+  cargarPreguntasOperadores();
+}
+function _escaparHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+// Convierte URLs sueltas en el texto (http(s)://... o www...) en enlaces
+// clicables — el resto del texto se escapa primero para que un mensaje no
+// pueda inyectar HTML/JS, solo lo que esta función arma a propósito.
+function _linkificar(texto) {
+  const escapado = _escaparHtml(texto);
+  return escapado.replace(/((https?:\/\/|www\.)[^\s<]+)/gi, (m) => {
+    const href = /^https?:\/\//i.test(m) ? m : 'https://' + m;
+    return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#0d2340">${m}</a>`;
+  });
+}
+// Aviso sonoro corto (beep) para que una pregunta nueva de un operador
+// llame la atención aunque el dashboard esté en otra pestaña — no
+// depende de ningún archivo de audio, se genera con Web Audio API.
+function _beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880;
+    g.gain.value = 0.15;
+    o.start();
+    setTimeout(() => { o.stop(); ctx.close(); }, 180);
+  } catch (e) {}
+}
+// Bandeja de preguntas que los cajeros mandan desde la tablet (botón
+// "❓ Preguntar" en operador.html, origen='cajero'). Al abrir el
+// chat se listan y se marcan como leídas (leido_admin=true) — el badge
+// del menú refleja las que aún no se han abierto aquí.
+async function cargarPreguntasOperadores() {
+  const cont = document.getElementById('preguntas-operadores-lista');
+  cont.innerHTML = '<div style="font-size:12.5px;color:var(--muted)">Cargando...</div>';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/avisos_operador?origen=eq.cajero&select=id,creado_por,mensaje,created_at,leido_admin,hilo_id&order=created_at.desc&limit=30`, { headers: SB_HEADERS_PARAM });
+    const preguntas = r.ok ? await r.json() : [];
+    if (!preguntas.length) {
+      cont.innerHTML = '<div style="font-size:12.5px;color:var(--muted)">Sin preguntas de operadores.</div>';
+    } else {
+      cont.innerHTML = preguntas.map(p => `
+        <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+          <div style="font-size:12px;font-weight:800">${_escaparHtml(p.creado_por)} <span style="font-weight:400;color:var(--muted);font-size:11px">· ${new Date(p.created_at).toLocaleString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span></div>
+          <div style="font-size:13px;margin:6px 0;white-space:pre-line">${_linkificar(p.mensaje)}</div>
+          <div style="display:flex;gap:6px">
+            <input type="text" class="responder-input" data-id="${p.id}" data-hilo="${p.hilo_id || p.id}" data-nombre="${_escaparHtml(p.creado_por)}" placeholder="Responder..." style="flex:1;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:12px">
+            <button class="btn-responder-pregunta" data-id="${p.id}" style="padding:6px 12px;border:none;border-radius:6px;background:#0d2340;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Enviar</button>
+          </div>
+        </div>`).join('');
+      cont.querySelectorAll('.btn-responder-pregunta').forEach(btn => {
+        btn.onclick = () => {
+          const input = cont.querySelector(`.responder-input[data-id="${btn.dataset.id}"]`);
+          responderPreguntaOperador(input.dataset.hilo, input.dataset.nombre, input.value, input);
+        };
+      });
+    }
+    // Marca como leídas todas las que llegaron sin leer, para que el badge
+    // baje a 0 — no bloquea el render de la lista si falla.
+    const sinLeer = preguntas.filter(p => !p.leido_admin);
+    if (sinLeer.length) {
+      await fetch(`${SUPABASE_URL}/rest/v1/avisos_operador?id=in.(${sinLeer.map(p => p.id).join(',')})`, {
+        method: 'PATCH', headers: {...SB_HEADERS_PARAM, Prefer: 'return=minimal', 'Content-Type': 'application/json'},
+        body: JSON.stringify({ leido_admin: true })
+      });
+    }
+    actualizarBadgePreguntas();
+  } catch (e) {
+    cont.innerHTML = '<div style="font-size:12.5px;color:var(--muted)">No se pudo cargar (revisa tu conexión).</div>';
+  }
+}
+async function responderPreguntaOperador(hiloId, nombreCajero, texto, inputEl) {
+  texto = (texto || '').trim();
+  if (!texto) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/avisos_operador`, {
+      method: 'POST', headers: {...SB_HEADERS_PARAM, Prefer: 'return=minimal'},
+      body: JSON.stringify({
+        plaza_id: PARAM_PLAZA_ID, destinatario: nombreCajero, mensaje: texto,
+        creado_por: USUARIO_ACTUAL ? (USUARIO_ACTUAL.nombre || USUARIO_ACTUAL.usuario) : 'Admin',
+        origen: 'admin', hilo_id: hiloId, leido_admin: true
+      })
+    });
+    if (inputEl) { inputEl.value = ''; }
+    showToast(`✅ Respuesta enviada a ${nombreCajero}`, '#3aa757');
+  } catch (e) {
+    showToast('⚠ No se pudo enviar la respuesta', '#D93025');
+  }
+}
+// Cuenta las preguntas de cajeros que aún no se han visto en el chat
+// (leido_admin=false) y actualiza el badge rojo del menú — se revisa
+// junto con el resto de datos (cargarDatos) cada 60s. Si el conteo subió
+// desde la última revisión (llegó una pregunta nueva), suena un beep para
+// que se note aunque el dashboard esté en otra pestaña.
+let _ultimoConteoPreguntas = null;
+async function actualizarBadgePreguntas() {
+  const badge = document.getElementById('badge-preguntas-pendientes');
+  if (!badge) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/avisos_operador?origen=eq.cajero&leido_admin=eq.false&select=id`, { headers: SB_HEADERS_PARAM });
+    const pendientes = r.ok ? await r.json() : [];
+    if (_ultimoConteoPreguntas !== null && pendientes.length > _ultimoConteoPreguntas) {
+      _beep();
+    }
+    _ultimoConteoPreguntas = pendientes.length;
+    if (pendientes.length) {
+      badge.textContent = pendientes.length;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  } catch (e) {}
+}
+function cerrarAvisoOperador() {
+  document.getElementById('modal-aviso-operador').classList.remove('open');
+}
+async function enviarAvisoOperador() {
+  const destinatario = document.getElementById('aviso-destinatario').value || null;
+  const mensaje = document.getElementById('aviso-mensaje').value.trim();
+  if (!mensaje) { showToast('Escribe un mensaje antes de enviar', '#D93025'); return; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/avisos_operador`, {
+      method: 'POST', headers: {...SB_HEADERS_PARAM, Prefer: 'return=minimal'},
+      body: JSON.stringify({
+        plaza_id: PARAM_PLAZA_ID, destinatario, mensaje,
+        creado_por: USUARIO_ACTUAL ? (USUARIO_ACTUAL.nombre || USUARIO_ACTUAL.usuario) : 'Admin'
+      })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    cerrarAvisoOperador();
+    showToast(`✅ Aviso enviado a ${destinatario || 'todos los operadores'}`, '#3aa757');
+  } catch (e) {
+    showToast('⚠ No se pudo enviar el aviso: ' + e.message, '#D93025');
+  }
+}
+async function buscarTicketParaCancelar() {
+  const folio = document.getElementById('gm-folio-buscar').value.trim();
+  const cont = document.getElementById('gm-cancelar-detalle');
+  if (!folio) { cont.innerHTML = ''; return; }
+  cont.innerHTML = '<div style="color:var(--muted);font-size:12px">Buscando…</div>';
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?folio=eq.${encodeURIComponent(folio)}&select=*`, {headers});
+    const rows = r.ok ? await r.json() : [];
+    if (!rows.length) { cont.innerHTML = '<div style="color:var(--red);font-size:12px">Folio no encontrado</div>'; GM_TICKET_ACTUAL = null; return; }
+    const t = rows[0];
+    GM_TICKET_ACTUAL = t;
+    if (t.estatus === 'cancelado') {
+      cont.innerHTML = `<div style="font-size:12px;color:var(--muted)">Folio <b>${escHtmlAttr(t.folio)}</b> ya está cancelado.</div>`;
+      return;
+    }
+    cont.innerHTML = `
+      <div style="background:var(--bg);border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:10px">
+        <b>${escHtmlAttr(t.folio)}</b> · ${escHtmlAttr(t.tipo)} · ${escHtmlAttr(t.estatus)} ·
+        Entrada ${t.hora_entrada||'—'} (${escHtmlAttr(t.cajero_entrada)||'—'}) ·
+        Salida ${t.hora_salida||'—'} (${escHtmlAttr(t.cajero_salida)||'—'}) ·
+        Importe ${fmt$(Number(t.importe)||0)}
+      </div>
+      <textarea id="gm-motivo-cancelar" placeholder="Motivo de la cancelación" style="width:100%;min-height:44px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box"></textarea>
+      <button class="param-btn" style="background:var(--red)" onclick="confirmarCancelarTicket()">Cancelar este ticket</button>
+    `;
+  } catch (e) { cont.innerHTML = '<div style="color:var(--red);font-size:12px">Error al buscar</div>'; }
+}
+async function confirmarCancelarTicket() {
+  const t = GM_TICKET_ACTUAL;
+  if (!t) return;
+  const motivo = (document.getElementById('gm-motivo-cancelar')?.value || '').trim();
+  if (!motivo) { showToast('Indica un motivo antes de cancelar', '#D93025'); return; }
+  if (!confirm('¿Cancelar el ticket '+t.folio+'? Esto no se puede deshacer desde aquí.')) return;
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal'};
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?folio=eq.${encodeURIComponent(t.folio)}`, {
+      method:'PATCH', headers, body: JSON.stringify({estatus:'cancelado'})
+    });
+    if (!r.ok) throw new Error('http '+r.status);
+    logBitacora('cancelacion', { folio: t.folio, motivo, estatus_anterior: t.estatus, importe_anterior: Number(t.importe)||0, origen: 'admin_gestion_manual' });
+    showToast('Ticket '+t.folio+' cancelado');
+    document.getElementById('gm-cancelar-detalle').innerHTML = '<div style="font-size:12px;color:var(--muted)">Cancelado.</div>';
+    GM_TICKET_ACTUAL = null;
+    cargarDatos();
+  } catch (e) { showToast('No se pudo cancelar', '#D93025'); }
+}
+
+// ══ CIERRE ADMINISTRATIVO (reconciliación diaria de boletos abiertos) ══
+// Catálogo abierto: no hay CHECK constraint en incidencia_tipo, así que se
+// pueden agregar causas nuevas aquí sin tocar la base.
+const CIERRE_ADMIN_CAUSAS = [
+  { value: 'cobrado_en_otro_folio', label: 'Cobrado en otro folio (pago conjunto / boleto perdido)' },
+  { value: 'cliente_no_quiso_pagar', label: 'Cliente identificado que se negó a pagar' },
+  { value: 'evasion_no_detectada', label: 'Evasión — se coló sin pagar' },
+  { value: 'otro', label: 'Otro (especificar en el motivo)' },
+];
+let _cierreAdminFechaActual = null;
+let _cierreAdminTicketsCache = {};
+
+function horasTranscurridas(horaEntrada) {
+  if (!horaEntrada) return null;
+  const [h,m] = horaEntrada.split(':').map(Number);
+  const ahora = new Date();
+  let mins = (ahora.getHours()*60+ahora.getMinutes()) - (h*60+m);
+  if (mins < 0) mins += 24*60;
+  return mins/60;
+}
+
+async function cargarCierreAdminDias() {
+  const cont = document.getElementById('cierre-admin-dias');
+  cont.innerHTML = '<div style="font-size:12px;color:var(--muted)">Cargando…</div>';
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?estatus=eq.abierto&select=fecha_op&order=fecha_op.desc`, {headers});
+    if (!r.ok) throw new Error('http '+r.status);
+    const rows = await r.json();
+    const porDia = {};
+    rows.forEach(t => { porDia[t.fecha_op] = (porDia[t.fecha_op]||0) + 1; });
+    const dias = Object.keys(porDia).sort().reverse();
+    if (!dias.length) {
+      cont.innerHTML = '<div style="font-size:13px;color:var(--green);font-weight:700;padding:10px 0">✓ No hay boletos abiertos pendientes — todos los días están cuadrados.</div>';
+      return;
+    }
+    cont.innerHTML = dias.map(fecha => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer" onclick="abrirCierreAdminDia('${fecha}')">
+        <span style="font-weight:700">${fecha}</span>
+        <span style="background:#FDECEA;color:#D93025;border-radius:99px;padding:2px 10px;font-size:12px;font-weight:800">${porDia[fecha]} pendiente${porDia[fecha]===1?'':'s'}</span>
+      </div>`).join('');
+  } catch (e) { cont.innerHTML = '<div style="color:var(--red);font-size:12px">No se pudo cargar (¿ya corriste el ALTER TABLE?)</div>'; }
+}
+
+async function abrirCierreAdminDia(fecha) {
+  _cierreAdminFechaActual = fecha;
+  document.getElementById('cierre-admin-detalle-card').style.display = '';
+  document.getElementById('cierre-admin-detalle-titulo').textContent = 'Pendientes del ' + fecha;
+  const cont = document.getElementById('cierre-admin-detalle-tabla');
+  cont.innerHTML = '<div style="font-size:12px;color:var(--muted)">Cargando…</div>';
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?estatus=eq.abierto&fecha_op=eq.${fecha}&select=*&order=hora_entrada.asc`, {headers});
+    if (!r.ok) throw new Error('http '+r.status);
+    const rows = await r.json();
+    renderCierreAdminTabla(rows);
+  } catch (e) { cont.innerHTML = '<div style="color:var(--red);font-size:12px">Error al cargar</div>'; }
+}
+
+function cerrarDetalleCierreAdmin() {
+  document.getElementById('cierre-admin-detalle-card').style.display = 'none';
+  _cierreAdminFechaActual = null;
+}
+
+function renderCierreAdminTabla(rows) {
+  const cont = document.getElementById('cierre-admin-detalle-tabla');
+  _cierreAdminTicketsCache = {};
+  rows.forEach(t => { _cierreAdminTicketsCache[t.folio] = t; });
+  if (!rows.length) {
+    cont.innerHTML = '<div style="font-size:13px;color:var(--green);font-weight:700;padding:10px 0">✓ Ya no quedan pendientes este día.</div>';
+    return;
+  }
+  cont.innerHTML = rows.map(t => {
+    const hrs = horasTranscurridas(t.hora_entrada);
+    const alerta = hrs !== null && hrs >= 4;
+    return `
+    <div style="border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px">
+          <b style="font-family:monospace">${escHtmlAttr(t.folio)}</b> · ${escHtmlAttr(t.tipo)} ·
+          entrada ${t.hora_entrada||'—'} (${escHtmlAttr(t.cajero_entrada)||'—'})
+          ${hrs!==null ? ` · <span style="color:${alerta?'var(--red)':'var(--muted)'};font-weight:${alerta?800:400}">${hrs.toFixed(1)}h abierto</span>` : ''}
+        </div>
+        <button class="param-btn outline" onclick="toggleResolverCaso('${escHtmlAttr(t.folio)}')">Resolver</button>
+      </div>
+      <div id="resolver-${escHtmlAttr(t.folio)}" style="display:none;margin-top:10px;border-top:1px solid var(--border);padding-top:10px"></div>
+    </div>`;
+  }).join('');
+}
+
+function toggleResolverCaso(folio) {
+  const el = document.getElementById('resolver-'+folio);
+  if (!el) return;
+  const yaAbierto = el.style.display !== 'none';
+  document.querySelectorAll('[id^="resolver-"]').forEach(e => e.style.display = 'none');
+  if (yaAbierto) return;
+  el.style.display = '';
+  el.innerHTML = `
+    <select id="causa-${folio}" onchange="onCambioCausaCierre('${folio}')" style="border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;margin-bottom:8px;width:100%;box-sizing:border-box">
+      <option value="">Selecciona la causa…</option>
+      ${CIERRE_ADMIN_CAUSAS.map(c=>`<option value="${c.value}">${c.label}</option>`).join('')}
+    </select>
+    <div id="folio-relacionado-${folio}" style="display:none;margin-bottom:8px"></div>
+    <textarea id="motivo-${folio}" placeholder="Motivo / nota (obligatorio)" style="width:100%;min-height:44px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:inherit;margin-bottom:8px;box-sizing:border-box"></textarea>
+    <button class="param-btn" style="background:var(--red)" onclick="confirmarCierreAdminCaso('${folio}')">Cerrar folio</button>
+  `;
+}
+
+async function onCambioCausaCierre(folio) {
+  const causa = document.getElementById('causa-'+folio).value;
+  const cont = document.getElementById('folio-relacionado-'+folio);
+  if (causa !== 'cobrado_en_otro_folio') { cont.style.display = 'none'; cont.innerHTML = ''; return; }
+  cont.style.display = '';
+  cont.innerHTML = '<div style="font-size:12px;color:var(--muted)">Buscando folios candidatos…</div>';
+  const t = _cierreAdminTicketsCache[folio];
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    // Candidatos: folios del mismo día que sí se cobraron (perdido o
+    // cobrado) con hora de entrada cercana (±20 min) — puede haber
+    // ambigüedad si dos autos entraron casi juntos, por eso se muestran
+    // varias sugerencias y el admin elige, en vez de forzar una
+    // coincidencia automática.
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?fecha_op=eq.${t.fecha_op}&estatus=in.(perdido,cobrado)&select=folio,tipo,estatus,hora_entrada,importe&order=hora_entrada.asc`, {headers});
+    const rows = r.ok ? await r.json() : [];
+    const [th,tm] = (t.hora_entrada||'00:00').split(':').map(Number);
+    const tMin = th*60+tm;
+    const cercanos = rows.filter(o => {
+      const [oh,om] = (o.hora_entrada||'00:00').split(':').map(Number);
+      return Math.abs((oh*60+om) - tMin) <= 20;
+    });
+    cont.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Folio relacionado (el que sí se cobró) — sugerencias por hora cercana, o escribe el folio a mano:</div>
+      ${cercanos.length ? cercanos.map(o=>`
+        <div style="display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;margin:2px;cursor:pointer;font-size:12px" onclick="document.getElementById('folio-rel-input-${folio}').value='${escHtmlAttr(o.folio)}'">
+          ${escHtmlAttr(o.folio)} · ${o.hora_entrada||'—'} · ${escHtmlAttr(o.estatus)} · ${fmt$(Number(o.importe)||0)}
+        </div>`).join('') : '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">Sin sugerencias cercanas — escribe el folio a mano.</div>'}
+      <input type="text" id="folio-rel-input-${folio}" placeholder="Folio relacionado" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;margin-top:6px;box-sizing:border-box">
+    `;
+  } catch (e) { cont.innerHTML = '<div style="color:var(--red);font-size:12px">Error al buscar candidatos</div>'; }
+}
+
+async function confirmarCierreAdminCaso(folio) {
+  const causa = document.getElementById('causa-'+folio).value;
+  const motivo = (document.getElementById('motivo-'+folio).value || '').trim();
+  const folioRelInput = document.getElementById('folio-rel-input-'+folio);
+  const folioRelacionado = folioRelInput ? folioRelInput.value.trim() : '';
+  if (!causa) { showToast('Selecciona una causa', '#D93025'); return; }
+  if (!motivo) { showToast('El motivo es obligatorio', '#D93025'); return; }
+  if (causa === 'cobrado_en_otro_folio' && !folioRelacionado) { showToast('Indica el folio relacionado', '#D93025'); return; }
+  if (!confirm('¿Cerrar el folio '+folio+' con esta resolución? No se puede deshacer desde aquí.')) return;
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'return=minimal'};
+    const body = {
+      estatus: 'cerrado_admin', importe: 0,
+      cierre_administrativo: true, incidencia_tipo: causa, motivo_cierre: motivo,
+      folio_relacionado: causa === 'cobrado_en_otro_folio' ? folioRelacionado : null,
+      cerrado_por: USUARIO_ACTUAL ? (USUARIO_ACTUAL.usuario||USUARIO_ACTUAL.nombre) : null,
+      cerrado_en: new Date().toISOString(),
+    };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets?folio=eq.${encodeURIComponent(folio)}`, {
+      method: 'PATCH', headers, body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('http '+r.status);
+    logBitacora('cierre_administrativo', { folio, incidencia_tipo: causa, motivo, folio_relacionado: body.folio_relacionado });
+    showToast('Folio '+folio+' cerrado');
+    abrirCierreAdminDia(_cierreAdminFechaActual);
+    cargarCierreAdminDias();
+  } catch (e) { showToast('No se pudo cerrar (¿ya corriste el ALTER TABLE?)', '#D93025'); }
+}
+
+async function guardarCapturaManual() {
+  const folio = document.getElementById('gm-folio').value.trim();
+  const tipo = document.getElementById('gm-tipo').value;
+  const fecha = document.getElementById('gm-fecha').value;
+  const horaEntrada = document.getElementById('gm-hora-entrada').value;
+  const cajeroEntrada = document.getElementById('gm-cajero-entrada').value.trim();
+  const horaSalida = document.getElementById('gm-hora-salida').value;
+  const cajeroSalida = document.getElementById('gm-cajero-salida').value.trim();
+  const importe = parseFloat(document.getElementById('gm-importe').value) || 0;
+  const motivo = document.getElementById('gm-motivo').value.trim();
+
+  if (!folio || !fecha || !horaEntrada || !cajeroEntrada) {
+    showToast('Folio, fecha, hora de entrada y cajero de entrada son obligatorios', '#D93025'); return;
+  }
+  try {
+    const headers = {'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY};
+    const chk = await fetch(`${SUPABASE_URL}/rest/v1/tickets?folio=eq.${encodeURIComponent(folio)}&select=folio`, {headers});
+    const existe = chk.ok ? await chk.json() : [];
+    if (existe.length) { showToast('Ese folio ya existe, usa otro', '#D93025'); return; }
+
+    const d = new Date(fecha+'T12:00:00');
+    const diaSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][d.getDay()];
+    // Sin hora de salida el ticket queda abierto (igual que uno real que aún
+    // no cobra); con hora de salida se infieren horas_cobradas/tarifa a
+    // partir del importe capturado, mismo criterio que usa el cobro normal.
+    let estatus = 'abierto', minutosEstancia = null, horasCobradas = null, tarifa = null;
+    if (horaSalida) {
+      const [h1,m1] = horaEntrada.split(':').map(Number), [h2,m2] = horaSalida.split(':').map(Number);
+      minutosEstancia = Math.max(0, (h2*60+m2) - (h1*60+m1));
+      horasCobradas = Math.max(1, Math.ceil(minutosEstancia/60));
+      estatus = importe > 0 ? 'cobrado' : 'cortesia';
+      tarifa = importe > 0 ? Math.round((importe/horasCobradas)*100)/100 : null;
+    }
+    const payload = {
+      folio, tipo, estatus,
+      cajero: horaSalida ? (cajeroSalida||cajeroEntrada) : cajeroEntrada,
+      cajero_entrada: cajeroEntrada, cajero_salida: horaSalida ? (cajeroSalida||null) : null,
+      hora_entrada_at: `${fecha}T${horaEntrada}:00-06:00`,
+      hora_salida_at: horaSalida ? `${fecha}T${horaSalida}:00-06:00` : null,
+      hora_entrada: horaEntrada, hora_salida: horaSalida || null,
+      minutos_estancia: minutosEstancia, horas_cobradas: horasCobradas, tarifa,
+      penalizacion: 0, importe,
+      fecha_op: fecha, dia_semana: diaSemana, mes: d.getMonth()+1, anio: d.getFullYear(),
+      plaza: 'ONLYPARK'
+    };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tickets`, {
+      method:'POST',
+      headers: {...headers, 'Content-Type':'application/json', Prefer:'return=minimal'},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error('http '+r.status);
+    logBitacora('captura_manual', { folio, fecha, hora_entrada: horaEntrada, hora_salida: horaSalida||null, importe, motivo: motivo||null });
+    showToast('Ticket '+folio+' registrado manualmente');
+    ['gm-folio','gm-hora-entrada','gm-cajero-entrada','gm-hora-salida','gm-cajero-salida','gm-importe','gm-motivo'].forEach(id => document.getElementById(id).value = '');
+    cargarDatos();
+  } catch (e) { showToast('No se pudo guardar el ticket', '#D93025'); }
+}
+
+// ══ PARÁMETROS DEL SISTEMA ══
+let PARAM_PLAZA_ID = null;
+let _TIENE_REDONDEO = false;
+const SB_HEADERS_PARAM = {
+  'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+  'Content-Type': 'application/json'
+};
+
+async function abrirParametros() {
+  logBitacora('vista_pantalla', { pantalla: 'Parámetros del sistema' });
+  document.getElementById('modal-parametros').classList.add('open');
+  await Promise.all([cargarParametrosPlaza(), cargarCajeros(), cargarEmpleados()]);
+}
+function cerrarParametros() {
+  document.getElementById('modal-parametros').classList.remove('open');
+}
+
+// ══ TAB MOVIMIENTOS: buscador de soporte para el administrador — misma
+// lógica de filtros/columnas que el modal de Movimientos de la caseta
+// (operador.html), pero consultando un RANGO de fechas en vez de
+// limitarse al día en curso, porque el admin necesita localizar folios de
+// cualquier día para atender quejas/incidencias. ══
+let MOV_ADM_INICIADO = false;
+let MOVS_ACTUALES_ADM = [];
+let MOV_FILTRADOS_ADM = [];
+
+function _repoblarSelect(sel, opciones, defaultLabel) {
+  if (!sel) return;
+  const actual = sel.value;
+  sel.innerHTML = `<option value="todos">${defaultLabel}</option>` +
+    opciones.map(([valor, label]) => `<option value="${valor}">${label}</option>`).join('');
+  if (opciones.some(([v]) => v === actual)) sel.value = actual;
+}
+
+function formatEstancia(mins) {
+  if (mins == null) return '—';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return h > 0 ? `${h}hr ${String(m).padStart(2,'0')}min` : `${m}min`;
+}
+
+function tipoLocalDesdeFolioAdm(folio) {
+  if (folio.startsWith('PEN-')) return 'pension';
+  if (folio.startsWith('EMP-')) return 'empleado';
+  if (folio.startsWith('COR-')) return 'cortesia';
+  return null;
+}
+
+function _camposComunesTicketAdm(t) {
+  return {
+    folio_entrada: t.folio,
+    folio_salida: t.folio_salida || null,
+    cajero_entrada: t.cajero_entrada || t.cajero || '—',
+    cajero_salida: t.cajero_salida || (t.estatus !== 'abierto' ? (t.cajero || '—') : '—'),
+    fecha_op: t.fecha_op || '—',
+    hora_entrada_col: t.hora_entrada || '—',
+    hora_salida_col: t.hora_salida || (t.estatus === 'abierto' ? '—' : (t.hora_salida||'—')),
+    minutos_estancia: t.minutos_estancia != null ? t.minutos_estancia : null,
+    estatus: t.estatus || '—',
+    turno_id: t.turno_id || null,
+    tarifa: t.tarifa || 0,
+    empleado: t.empleados ? {
+      id: t.empleado_id, nombre: t.empleados.nombre_completo,
+      puesto: t.empleados.puesto || '—', area: t.empleados.area || '—'
+    } : null,
+    pension: t.pensiones ? {
+      id: t.pension_id,
+      cliente: (t.pensiones.clientes && t.pensiones.clientes.nombre) || '—',
+      tipo: t.pensiones.tipo || '—',
+      estatus: t.pensiones.estado || '—',
+      vehiculo: t.pensiones.vehiculos
+        ? `${t.pensiones.vehiculos.marca||''} ${t.pensiones.vehiculos.modelo||''} · ${t.pensiones.vehiculos.placas||''}`.trim()
+        : '—'
+    } : null,
+  };
+}
+
+function ticketsAMovimientosAdm(rows) {
+  return rows.map(t => {
+    const hrs = t.horas_cobradas || 0;
+    const comunes = _camposComunesTicketAdm(t);
+    const especial = tipoLocalDesdeFolioAdm(t.folio);
+    if (especial) {
+      const nombres = {pension:'Pensión', empleado:'Empleado', cortesia:'Cortesía'};
+      return { tipo: especial, folio: t.folio, desc: nombres[especial],
+        importe: '$0.00', hora: t.hora_salida || t.hora_entrada, ...comunes };
+    }
+    // La tarifa (normal/preferencial) se conserva SIEMPRE, sin importar si ya
+    // se cobró, se perdió o quedó como cortesía — el estatus de pago
+    // (Abierto/Cobrado/Perdido/Cortesía) ya se filtra aparte con el combo de
+    // Estatus. Antes un preferencial ya cobrado se reclasificaba como
+    // tipo:'salida' y desaparecía del filtro "Preferencial".
+    const esPref = t.tipo === 'preferencial';
+    const tipo = esPref ? 'preferencial' : 'entrada';
+    if (t.estatus === 'abierto') {
+      return { tipo, folio: t.folio,
+        desc: esPref ? '★ Preferencial' : 'Entrada normal', importe: '—', hora: t.hora_entrada, ...comunes };
+    }
+    if (t.estatus === 'perdido') {
+      return { tipo, folio: t.folio, desc: `Perdido · ${hrs}hr`,
+        importe: '$' + Number(t.importe||0).toFixed(2), hora: t.hora_salida || t.hora_entrada, ...comunes };
+    }
+    if (t.estatus === 'cortesia') {
+      return { tipo, folio: t.folio, desc: `${t.tipo} · ${hrs}hr`,
+        importe: '$0.00', hora: t.hora_salida || t.hora_entrada, ...comunes };
+    }
+    return { tipo, folio: t.folio, desc: `${t.tipo} · ${hrs}hr`,
+      importe: '$' + Number(t.importe||0).toFixed(2), hora: t.hora_salida || t.hora_entrada, ...comunes };
+  });
+}
+
+// "Hoy"/"Ayer"/día de la semana/"Esta semana"/"Este mes" — mismo criterio
+// que getFechas() del tablero principal (con "Ayer" agregado), para saltar
+// rápido al universo de tiempo sin teclear fechas a mano.
+function getFechasPeriodoRapidoMovAdmin(valor) {
+  const hoy = new Date();
+  const fmt = fmtLocal;
+  if (valor === 'hoy') return { desde: fmt(hoy), hasta: fmt(hoy) };
+  if (valor === 'ayer') {
+    const d = new Date(hoy); d.setDate(d.getDate() - 1);
+    return { desde: fmt(d), hasta: fmt(d) };
+  }
+  const DIA_IDX = { domingo:0, lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6 };
+  if (valor in DIA_IDX) {
+    const diff = (hoy.getDay() - DIA_IDX[valor] + 7) % 7;
+    const d = new Date(hoy); d.setDate(hoy.getDate() - diff);
+    return { desde: fmt(d), hasta: fmt(d) };
+  }
+  if (valor === 'semana') {
+    const ini = new Date(hoy); ini.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
+    return { desde: fmt(ini), hasta: fmt(hoy) };
+  }
+  if (valor === 'mes') {
+    return { desde: fmt(new Date(hoy.getFullYear(), hoy.getMonth(), 1)), hasta: fmt(hoy) };
+  }
+  return null;
+}
+
+function aplicarPeriodoRapidoMovAdmin() {
+  const valor = document.getElementById('filtro-periodo-rapido-mov').value;
+  const rango = getFechasPeriodoRapidoMovAdmin(valor);
+  if (!rango) return;
+  document.getElementById('filtro-desde-mov').value = rango.desde;
+  document.getElementById('filtro-hasta-mov').value = rango.hasta;
+  actualizarMovimientosAdmin();
+}
+
+async function cargarMovimientosDBAdmin() {
+  const desde = document.getElementById('filtro-desde-mov').value || fmtLocal(new Date());
+  const hasta = document.getElementById('filtro-hasta-mov').value || fmtLocal(new Date());
+  try {
+    const select = 'select=*,empleados(nombre_completo,puesto,area),' +
+      'pensiones(tipo,estado,clientes(nombre),vehiculos(placas,marca,modelo))';
+    const base = `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${desde}&fecha_op=lte.${hasta}&${select}&order=created_at.desc`;
+    const rows = await fetchPaginado(base, SB_HEADERS_PARAM, 10000);
+    return ticketsAMovimientosAdm(rows);
+  } catch (e) {
+    return null;
+  }
+}
+
+function poblarFiltrosMovimientosAdmin(movs) {
+  const cajerosEntrada = [...new Set(movs.map(m => m.cajero_entrada).filter(c => c && c !== '—'))].sort();
+  const cajerosSalida  = [...new Set(movs.map(m => m.cajero_salida).filter(c => c && c !== '—'))].sort();
+  _repoblarSelect(document.getElementById('filtro-cajero-entrada-mov'), cajerosEntrada.map(c => [c, c]), 'Cajero que recibe: todos');
+  _repoblarSelect(document.getElementById('filtro-cajero-salida-mov'), cajerosSalida.map(c => [c, c]), 'Cajero que cobra: todos');
+
+  const empleados = [...new Map(movs.filter(m => m.empleado).map(m => [m.empleado.nombre, m.empleado])).values()];
+  _repoblarSelect(document.getElementById('filtro-empleado-mov'), empleados.map(e => [e.nombre, e.nombre]).sort((a,b)=>a[1].localeCompare(b[1])), 'Todos los empleados');
+  const areas = [...new Set(empleados.map(e => e.area).filter(a => a && a !== '—'))].sort();
+  _repoblarSelect(document.getElementById('filtro-empleado-area-mov'), areas.map(a => [a, a]), 'Todas las áreas');
+  const puestos = [...new Set(empleados.map(e => e.puesto).filter(p => p && p !== '—'))].sort();
+  _repoblarSelect(document.getElementById('filtro-empleado-puesto-mov'), puestos.map(p => [p, p]), 'Todos los puestos');
+
+  const pensionesMap = new Map();
+  movs.filter(m => m.pension).forEach(m => { if (!pensionesMap.has(m.pension.id)) pensionesMap.set(m.pension.id, m.pension); });
+  _repoblarSelect(document.getElementById('filtro-pension-mov'),
+    [...pensionesMap.entries()]
+      .map(([id, p]) => [id, `${p.cliente} · ${id.slice(0,8)}`])
+      .sort((a,b) => a[1].localeCompare(b[1])),
+    'Todas las pensiones');
+}
+
+async function actualizarMovimientosAdmin() {
+  const badge = document.getElementById('mov-fuente-adm');
+  if (badge) { badge.textContent = 'Consultando base de datos…'; badge.style.color = 'var(--muted)'; }
+  const desdeDB = await cargarMovimientosDBAdmin();
+  MOVS_ACTUALES_ADM = desdeDB || [];
+  if (badge) {
+    if (desdeDB) { badge.textContent = `● ${desdeDB.length} movimientos en el rango`; badge.style.color = 'var(--green)'; }
+    else { badge.textContent = '○ No se pudo consultar'; badge.style.color = 'var(--red)'; }
+  }
+  poblarFiltrosMovimientosAdmin(MOVS_ACTUALES_ADM);
+  refrescarMovimientosAdmin();
+}
+
+function limpiarFiltrosMovimientosAdmin() {
+  document.getElementById('filtro-folio-mov').value = '';
+  document.getElementById('filtro-tipo-mov').value = 'todos';
+  document.getElementById('filtro-franja-mov').value = 'todas';
+  document.getElementById('filtro-estatus-mov').value = 'todos';
+  document.getElementById('orden-mov-adm').value = 'reciente';
+  document.getElementById('filtro-folio-salida-mov').value = '';
+  document.getElementById('filtro-cajero-entrada-mov').value = 'todos';
+  document.getElementById('filtro-cajero-salida-mov').value = 'todos';
+  document.getElementById('filtro-hora-entrada-desde-mov').value = '';
+  document.getElementById('filtro-hora-entrada-hasta-mov').value = '';
+  document.getElementById('filtro-hora-salida-desde-mov').value = '';
+  document.getElementById('filtro-hora-salida-hasta-mov').value = '';
+  document.getElementById('filtro-empleado-mov').value = 'todos';
+  document.getElementById('filtro-empleado-buscar-mov').value = '';
+  document.getElementById('filtro-empleado-area-mov').value = 'todos';
+  document.getElementById('filtro-empleado-puesto-mov').value = 'todos';
+  document.getElementById('filtro-pension-mov').value = 'todos';
+  document.getElementById('filtro-pension-id-mov').value = '';
+  document.getElementById('filtro-pension-cliente-mov').value = '';
+  document.getElementById('filtro-pension-tipo-mov').value = 'todos';
+  refrescarMovimientosAdmin();
+}
+
+function toggleFiltrosAvanzadosMovAdmin() {
+  const cont = document.getElementById('mov-filtros-avanzados-adm');
+  const btn = document.getElementById('btn-toggle-filtros-avanzados-adm');
+  const abierto = cont.style.display !== 'none';
+  cont.style.display = abierto ? 'none' : 'flex';
+  btn.textContent = abierto ? '▾ Más filtros' : '▴ Menos filtros';
+}
+
+function refrescarMovimientosAdmin() {
+  renderMovimientosAdminTab(MOVS_ACTUALES_ADM);
+}
+
+function renderMovimientosAdminTab(movs) {
+  const colorMap = {entrada:'#0d2340',preferencial:'#0d2340',salida:'#3aa757',perdido:'#D93025',cortesia:'#4A4A4A',empleado:'#0d2340',pension:'#3aa757'};
+  const iconMap  = {entrada:'⬇',preferencial:'★',salida:'⬆',perdido:'⚠',cortesia:'🎁',empleado:'🪪',pension:'🅿️'};
+  const tipoLabel = {entrada:'Normal',preferencial:'Preferencial',
+                     salida:'Cobro',perdido:'Boleto perdido',cortesia:'Cortesía',
+                     empleado:'Empleado',pension:'Pensión'};
+
+  const filtro       = document.getElementById('filtro-tipo-mov').value;
+  const franja       = document.getElementById('filtro-franja-mov').value;
+  const folioQuery   = document.getElementById('filtro-folio-mov').value;
+  const orden        = document.getElementById('orden-mov-adm').value;
+  const estatus      = document.getElementById('filtro-estatus-mov').value;
+  const folioSalidaQ = document.getElementById('filtro-folio-salida-mov').value;
+  const cajEntrada   = document.getElementById('filtro-cajero-entrada-mov').value;
+  const cajSalida    = document.getElementById('filtro-cajero-salida-mov').value;
+  const hEntDesde    = document.getElementById('filtro-hora-entrada-desde-mov').value;
+  const hEntHasta    = document.getElementById('filtro-hora-entrada-hasta-mov').value;
+  const hSalDesde    = document.getElementById('filtro-hora-salida-desde-mov').value;
+  const hSalHasta    = document.getElementById('filtro-hora-salida-hasta-mov').value;
+  const empSel       = document.getElementById('filtro-empleado-mov').value;
+  const empBuscar    = document.getElementById('filtro-empleado-buscar-mov').value.trim().toLowerCase();
+  const empArea      = document.getElementById('filtro-empleado-area-mov').value;
+  const empPuesto    = document.getElementById('filtro-empleado-puesto-mov').value;
+  const penSel       = document.getElementById('filtro-pension-mov').value;
+  const penIdBuscar  = document.getElementById('filtro-pension-id-mov').value.trim().toLowerCase();
+  const penCliente   = document.getElementById('filtro-pension-cliente-mov').value.trim().toLowerCase();
+  const penTipo      = document.getElementById('filtro-pension-tipo-mov').value;
+
+  let filtrados = movs.filter(m => {
+    if (filtro !== 'todos' && m.tipo !== filtro) return false;
+    if (folioQuery && !(m.folio_entrada||'').toLowerCase().includes(folioQuery.trim().toLowerCase())) return false;
+    if (folioSalidaQ && !(m.folio_salida||'').toLowerCase().includes(folioSalidaQ.trim().toLowerCase())) return false;
+    if (franja !== 'todas') {
+      const h = parseInt((m.hora||'00').split(':')[0]);
+      const f = FRANJAS_ADMIN.find(f => f.key === franja);
+      if (f && !f.test(h)) return false;
+    }
+    if (cajEntrada !== 'todos' && m.cajero_entrada !== cajEntrada) return false;
+    if (cajSalida !== 'todos' && m.cajero_salida !== cajSalida) return false;
+    if (estatus === 'cerrados') { if (m.estatus === 'abierto') return false; }
+    else if (estatus !== 'todos' && m.estatus !== estatus) return false;
+    if (hEntDesde && (m.hora_entrada_col||'') < hEntDesde) return false;
+    if (hEntHasta && (m.hora_entrada_col||'') > hEntHasta) return false;
+    if (hSalDesde && (m.hora_salida_col||'') < hSalDesde) return false;
+    if (hSalHasta && (m.hora_salida_col||'') > hSalHasta) return false;
+    if (empSel !== 'todos' && (!m.empleado || m.empleado.nombre !== empSel)) return false;
+    if (empBuscar && (!m.empleado || !m.empleado.nombre.toLowerCase().includes(empBuscar))) return false;
+    if (empArea !== 'todos' && (!m.empleado || m.empleado.area !== empArea)) return false;
+    if (empPuesto !== 'todos' && (!m.empleado || m.empleado.puesto !== empPuesto)) return false;
+    if (penSel !== 'todos' && (!m.pension || m.pension.id !== penSel)) return false;
+    if (penIdBuscar && (!m.pension || !m.pension.id.toLowerCase().includes(penIdBuscar))) return false;
+    if (penCliente && (!m.pension || !m.pension.cliente.toLowerCase().includes(penCliente))) return false;
+    if (penTipo !== 'todos' && (!m.pension || m.pension.tipo !== penTipo)) return false;
+    return true;
+  });
+
+  const ordenadores = {
+    folio: (a,b) => (a.folio_entrada||'').localeCompare(b.folio_entrada||'', undefined, {numeric:true}),
+    folio_salida: (a,b) => (a.folio_salida||'').localeCompare(b.folio_salida||'', undefined, {numeric:true}),
+    estatus: (a,b) => (a.estatus||'').localeCompare(b.estatus||''),
+    tipo: (a,b) => (a.tipo||'').localeCompare(b.tipo||''),
+    hora_entrada: (a,b) => (a.hora_entrada_col||'').localeCompare(b.hora_entrada_col||''),
+    hora_salida: (a,b) => (a.hora_salida_col||'').localeCompare(b.hora_salida_col||''),
+    monto: (a,b) => {
+      const na = a.importe && a.importe !== '—' ? parseFloat(String(a.importe).replace('$','')) || 0 : 0;
+      const nb = b.importe && b.importe !== '—' ? parseFloat(String(b.importe).replace('$','')) || 0 : 0;
+      return nb - na;
+    },
+    cajero_entrada: (a,b) => (a.cajero_entrada||'').localeCompare(b.cajero_entrada||''),
+    cajero_salida: (a,b) => (a.cajero_salida||'').localeCompare(b.cajero_salida||''),
+    empleado: (a,b) => ((a.empleado&&a.empleado.nombre)||'').localeCompare((b.empleado&&b.empleado.nombre)||''),
+    pension: (a,b) => ((a.pension&&a.pension.cliente)||'').localeCompare((b.pension&&b.pension.cliente)||''),
+  };
+  if (ordenadores[orden]) {
+    filtrados = [...filtrados].sort(ordenadores[orden]);
+  }
+
+  MOV_FILTRADOS_ADM = filtrados;
+  const lista = document.getElementById('mov-lista-adm');
+  if (!filtrados.length) {
+    lista.innerHTML='<div style="text-align:center;padding:28px;color:var(--muted);font-size:14px">Sin movimientos en el rango/filtros seleccionados</div>';
+    renderResumenMovimientosAdmin([]);
+    return;
+  }
+
+  const estatusLabel = {abierto:'Abierto', cobrado:'Cobrado', perdido:'Perdido', cortesia:'Cortesía'};
+
+  lista.innerHTML = filtrados.map(m => {
+    const color  = colorMap[m.tipo] || '#888';
+    const icon   = iconMap[m.tipo]  || '·';
+    const label  = tipoLabel[m.tipo] || m.tipo;
+    const imp    = m.importe && m.importe !== '—' ? m.importe : '$0.00';
+    const impCol = m.estatus === 'cortesia' ? '#888' : 'var(--accent)';
+    const desc   = m.estatus === 'perdido'
+      ? (m.desc || 'Boleto perdido')
+      : (m.estatus === 'cortesia' && m.tipo !== 'cortesia')
+      ? 'Menos de 15 min'
+      : m.desc || label;
+    const estTxt = estatusLabel[m.estatus] || m.estatus || '—';
+    const cobro = m.estatus !== 'abierto' ? (m.cajero_salida || m.cajero_entrada || '—') : '—';
+    return `<div onclick="abrirDetalleMovimientoAdmin('${(m.folio_entrada||'').replace(/'/g,"\\'")}')"
+         style="display:grid;grid-template-columns:22px 100px 100px 85px minmax(160px,1fr) 100px 100px 80px 70px 70px 90px 90px 90px 75px 80px;gap:8px;
+         padding:9px 14px;border-bottom:1px solid #eaeef4;align-items:center;font-size:13px;cursor:pointer" onmouseover="this.style.background='#FAFAFF'" onmouseout="this.style.background=''">
+      <span style="color:${color};font-size:15px">${icon}</span>
+      <span style="font-family:monospace;font-weight:700;color:${color}">${m.folio_entrada}</span>
+      <span style="font-family:monospace;font-size:12px;color:#888">${m.folio_salida||'—'}</span>
+      <span style="color:#555;font-size:12px">${label}</span>
+      <span style="color:#555;font-size:12px">${desc}</span>
+      <span style="color:#0d2340;font-size:12px">${m.empleado ? m.empleado.nombre : '—'}</span>
+      <span style="color:#3aa757;font-size:12px">${m.pension ? m.pension.cliente : '—'}</span>
+      <span style="color:#888;font-size:12px">${m.pension ? m.pension.tipo : '—'}</span>
+      <span style="color:#999;font-size:12px;text-align:center">${m.hora_entrada_col||'—'}</span>
+      <span style="color:#999;font-size:12px;text-align:center">${m.hora_salida_col||'—'}</span>
+      <span style="color:#999;font-size:12px;text-align:center">${formatEstancia(m.minutos_estancia)}</span>
+      <span style="color:#555;font-size:12px">${m.cajero_entrada||'—'}</span>
+      <span style="color:#3aa757;font-size:12px;font-weight:700">${cobro}</span>
+      <span style="text-align:right;font-weight:700;color:${impCol}">${imp}</span>
+      <span style="color:#555;font-size:12px">${estTxt}</span>
+    </div>`;
+  }).join('');
+
+  renderResumenMovimientosAdmin(filtrados);
+}
+
+function abrirDetalleMovimientoAdmin(folioEntrada) {
+  const m = MOV_FILTRADOS_ADM.find(x => x.folio_entrada === folioEntrada);
+  if (!m) return;
+  const metodoLabel = {entrada:'Caseta · Entrada normal',preferencial:'Caseta · Entrada preferencial',
+    empleado:'Caseta · Empleado',pension:'Caseta · Pensión',cortesia:'Caseta · Cortesía',
+    perdido:'Caseta · Boleto perdido',salida:'Caseta · Cobro'};
+  const fila = (label, valor) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:3px 0">
+      <span style="color:var(--muted)">${label}</span><span style="font-weight:700;text-align:right">${valor}</span></div>`;
+  const seccion = (titulo) => `<div style="font-weight:900;font-size:14px;margin:14px 0 6px;color:var(--accent)">${titulo}</div>`;
+
+  let html = seccion('Información general') +
+    fila('Folio de entrada', m.folio_entrada) +
+    fila('Folio de salida', m.folio_salida || '—') +
+    fila('Descripción', m.desc || '—') +
+    fila('Estatus', m.estatus || '—') +
+    fila('Importe', m.importe && m.importe !== '—' ? m.importe : '$0.00') +
+    fila('Fecha', m.fecha_op || '—');
+
+  html += seccion('Entrada') +
+    fila('Fecha y hora', (m.fecha_op||'—') + ' ' + (m.hora_entrada_col||'—')) +
+    fila('Cajero de entrada', m.cajero_entrada || '—') +
+    fila('Tarifa aplicada', '$' + Number(m.tarifa||0).toFixed(2)) +
+    fila('Método de registro', metodoLabel[m.tipo] || m.tipo || '—');
+
+  html += seccion('Salida') +
+    fila('Fecha y hora', m.hora_salida_col && m.hora_salida_col !== '—' ? (m.fecha_op||'—') + ' ' + m.hora_salida_col : '—') +
+    fila('Cajero de salida', m.estatus !== 'abierto' ? (m.cajero_salida || '—') : '—') +
+    fila('Tiempo de estancia', formatEstancia(m.minutos_estancia)) +
+    fila('Monto cobrado', m.importe && m.importe !== '—' ? m.importe : '$0.00');
+
+  if (m.empleado) {
+    html += seccion('Empleado') +
+      fila('ID', m.empleado.id) +
+      fila('Nombre', m.empleado.nombre) +
+      fila('Puesto', m.empleado.puesto || '—') +
+      fila('Área', m.empleado.area || '—');
+  }
+  if (m.pension) {
+    html += seccion('Pensión') +
+      fila('Pension ID', m.pension.id) +
+      fila('Cliente', m.pension.cliente || '—') +
+      fila('Tipo', m.pension.tipo || '—') +
+      fila('Vehículo', m.pension.vehiculo || '—') +
+      fila('Estatus', m.pension.estatus || '—');
+  }
+
+  document.getElementById('detalle-mov-adm-contenido').innerHTML = html;
+  document.getElementById('modal-detalle-movimiento-adm').classList.add('open');
+}
+
+// Dos reglas (acordadas 2026-07-24, ver conversación):
+// 1) Ciclo de vida = Abierto | Cerrado (cobrado+cortesia, sin importar el
+//    monto — un $0 que pasó por el proceso de cobro SÍ está cerrado) |
+//    Perdido. Son las únicas 3 categorías posibles: si no suman el total
+//    filtrado, hay un folio con estatus inesperado que revisar (chip Cuadre).
+// 2) Dentro de los Cerrados, si hubo pago o no es OTRA dimensión aparte, con
+//    su propio motivo cuando no pagó (tiempo/cortesía especial/empleado/pensión).
+function renderResumenMovimientosAdmin(filtrados) {
+  const importeNum = m => (m.importe && m.importe !== '—') ? parseFloat(String(m.importe).replace('$','')) || 0 : 0;
+  const abiertos = filtrados.filter(m => m.estatus === 'abierto');
+  const perdidos = filtrados.filter(m => m.estatus === 'perdido');
+  const cerrados = filtrados.filter(m => m.estatus === 'cobrado' || m.estatus === 'cortesia');
+  const pagaron   = cerrados.filter(m => importeNum(m) > 0);
+  const sinCosto  = cerrados.filter(m => importeNum(m) === 0);
+  const porTiempo    = sinCosto.filter(m => m.tipo !== 'empleado' && m.tipo !== 'pension' && m.tipo !== 'cortesia');
+  const porVoucher    = sinCosto.filter(m => m.tipo === 'cortesia');
+  const porEmpleado  = sinCosto.filter(m => m.tipo === 'empleado');
+  const porPension    = sinCosto.filter(m => m.tipo === 'pension');
+  const totalMonto   = filtrados.reduce((s,m) => s + importeNum(m), 0);
+  const pagadoMonto  = pagaron.reduce((s,m) => s + importeNum(m), 0);
+  const perdidoMonto = perdidos.reduce((s,m) => s + importeNum(m), 0);
+  const fmt = n => n.toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+  const chip = (label, valor, color) =>
+    `<div style="background:var(--bg);border-radius:8px;padding:6px 12px;font-weight:700;color:${color||'var(--text)'}">
+       ${label}: ${valor}
+     </div>`;
+  const suma = abiertos.length + cerrados.length + perdidos.length;
+  const cuadreOk = suma === filtrados.length;
+  document.getElementById('mov-resumen-adm').innerHTML =
+    chip('Total movimientos', filtrados.length + ' · ' + fmt(totalMonto), 'var(--text)') +
+    chip('Pagaron', pagaron.length + ' · ' + fmt(pagadoMonto), 'var(--green)') +
+    chip('Sin costo', sinCosto.length + ` (⏱${porTiempo.length} tiempo · 🎁${porVoucher.length} cortesía · 🪪${porEmpleado.length} empleado · 🅿️${porPension.length} pensión)`, 'var(--muted)') +
+    chip('Perdidos', perdidos.length + ' · ' + fmt(perdidoMonto), 'var(--red)') +
+    chip('En plaza (abiertos)', String(abiertos.length), 'var(--accent2)') +
+    chip(cuadreOk ? '✓ Cuadre' : '⚠ Cuadre', cuadreOk ? '100%' : `${suma}/${filtrados.length} — revisar`, cuadreOk ? 'var(--green)' : 'var(--red)');
+}
+
+function exportarMovimientosAdminCSV() {
+  const filtrados = MOV_FILTRADOS_ADM;
+  if (!filtrados.length) { showToast('Sin movimientos para exportar'); return; }
+  const tipoLabelCsv = {entrada:'Normal',preferencial:'Preferencial',
+    salida:'Cobro',perdido:'Boleto perdido',cortesia:'Cortesia',
+    empleado:'Empleado',pension:'Pension'};
+  const estatusLabelCsv = {abierto:'Abierto', cobrado:'Cobrado', perdido:'Perdido', cortesia:'Cortesia'};
+  const csvSafe = s => String(s == null ? '' : s).replace(/,/g,';').replace(/\n/g,' ');
+  const desde = document.getElementById('filtro-desde-mov').value;
+  const hasta = document.getElementById('filtro-hasta-mov').value;
+  const header = 'Folio Entrada,Folio Salida,Tipo,Descripcion,Empleado,Pensionado,Tipo Pension,' +
+    'Hora Entrada,Hora Salida,Tiempo Estancia,Cajero Entrada,Cajero Salida,Importe,Estatus,Plaza';
+  const rows = filtrados.map(m => [
+    csvSafe(m.folio_entrada),
+    csvSafe(m.folio_salida),
+    csvSafe(tipoLabelCsv[m.tipo] || m.tipo),
+    csvSafe(m.desc),
+    csvSafe(m.empleado ? m.empleado.nombre : ''),
+    csvSafe(m.pension ? m.pension.cliente : ''),
+    csvSafe(m.pension ? m.pension.tipo : ''),
+    csvSafe(m.hora_entrada_col),
+    csvSafe(m.hora_salida_col && m.hora_salida_col !== '—' ? m.hora_salida_col : ''),
+    csvSafe(formatEstancia(m.minutos_estancia)),
+    csvSafe(m.cajero_entrada),
+    csvSafe(m.estatus !== 'abierto' ? m.cajero_salida : ''),
+    m.importe && m.importe !== '—' ? m.importe.replace('$','') : '0',
+    csvSafe(estatusLabelCsv[m.estatus] || m.estatus),
+    'ONLYPARK'
+  ].join(','));
+  const csv  = '\uFEFF' + [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `ONLYPARK_movimientos_admin_${desde}_a_${hasta}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`CSV exportado · ${filtrados.length} registros`);
+}
+
+// ══ TABS (Dashboard / Demanda) ══
+function showTab(id, el) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  const NOMBRE_PANTALLA = { movimientos:'Movimientos', bitacora:'Bitácora', demanda:'Demanda', 'cierre-admin':'Cierre administrativo' };
+  if (NOMBRE_PANTALLA[id]) logBitacora('vista_pantalla', { pantalla: NOMBRE_PANTALLA[id] });
+  if (id === 'demanda') {
+    // Carga perezosa: solo pide ONLYPARK_Demanda.html la primera vez que se abre la pestaña
+    const ifr = document.getElementById('iframe-demanda');
+    if (!ifr.src) ifr.src = 'ONLYPARK_Demanda.html';
+  }
+  if (id === 'movimientos' && !MOV_ADM_INICIADO) {
+    MOV_ADM_INICIADO = true;
+    const hoy = fmtLocal(new Date());
+    document.getElementById('filtro-desde-mov').value = hoy;
+    document.getElementById('filtro-hasta-mov').value = hoy;
+    actualizarMovimientosAdmin();
+  }
+  if (id === 'cierre-admin') {
+    cerrarDetalleCierreAdmin();
+    cargarCierreAdminDias();
+  }
+  if (id === 'bitacora' && !BIT_ADM_INICIADO) {
+    BIT_ADM_INICIADO = true;
+    const hoy = fmtLocal(new Date());
+    document.getElementById('bit-desde').value = hoy;
+    document.getElementById('bit-hasta').value = hoy;
+    buscarBitacora();
+  }
+}
+
+// ══ MENÚ ADMIN (Parámetros, Pensiones, Portal) ══
+function toggleNavMenu(ev) {
+  if (ev) ev.stopPropagation();
+  document.getElementById('nav-menu-list').classList.toggle('open');
+}
+function cerrarNavMenu() {
+  document.getElementById('nav-menu-list').classList.remove('open');
+}
+document.addEventListener('click', (ev) => {
+  const wrap = document.querySelector('.nav-menu-wrap');
+  if (wrap && !wrap.contains(ev.target)) cerrarNavMenu();
+});
+
+async function cargarParametrosPlaza() {
+  try {
+    // url_facturacion y los horarios pueden no existir aún (requieren ALTER
+    // TABLE manual); si el select completo falla por columna faltante, se
+    // reintenta con menos columnas para no tumbar la carga de lo que sí existe.
+    const COLS_BASE = 'plaza_id,nombre,capacidad_total,tarifa_normal,tarifa_pref,tarifa_perdido,tolerancia_min,empresa_grupo,rfc,ciudad,estado,direccion';
+    const COLS_REDONDEO = 'tolerancia_redondeo_habilitado,tolerancia_redondeo_min';
+    let r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=${COLS_BASE},${COLS_REDONDEO},url_facturacion,hora_apertura,hora_relevo_1,hora_relevo_2,hora_cierre,promociones_habilitado&limit=1`, { headers: SB_HEADERS_PARAM });
+    let tieneUrlFacturacion = true, tieneHorarios = true, tienePromo = true, tieneRedondeo = true;
+    if (!r.ok) {
+      tieneRedondeo = false;
+      r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=${COLS_BASE},url_facturacion,hora_apertura,hora_relevo_1,hora_relevo_2,hora_cierre,promociones_habilitado&limit=1`, { headers: SB_HEADERS_PARAM });
+    }
+    if (!r.ok) {
+      tienePromo = false;
+      r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=${COLS_BASE},url_facturacion,hora_apertura,hora_relevo_1,hora_relevo_2,hora_cierre&limit=1`, { headers: SB_HEADERS_PARAM });
+    }
+    if (!r.ok) {
+      tieneHorarios = false;
+      r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=${COLS_BASE},url_facturacion&limit=1`, { headers: SB_HEADERS_PARAM });
+    }
+    if (!r.ok) {
+      tieneUrlFacturacion = false;
+      r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=${COLS_BASE}&limit=1`, { headers: SB_HEADERS_PARAM });
+    }
+    const rows = r.ok ? await r.json() : [];
+    if (rows.length) {
+      const p = rows[0];
+      PARAM_PLAZA_ID = p.plaza_id;
+      document.getElementById('param-edificio-nombre').value = p.nombre || '';
+      document.getElementById('param-capacidad').value = p.capacidad_total || '';
+      document.getElementById('param-url-facturacion').value = tieneUrlFacturacion ? (p.url_facturacion || '') : '';
+      document.getElementById('param-url-facturacion').placeholder = tieneUrlFacturacion ? 'https://...' : 'Falta correr el ALTER TABLE (ver instrucciones)';
+      document.getElementById('param-url-facturacion').disabled = !tieneUrlFacturacion;
+      ['hora-apertura','hora-relevo1','hora-relevo2','hora-cierre'].forEach(id => {
+        document.getElementById('param-'+id).disabled = !tieneHorarios;
+      });
+      document.getElementById('param-promociones-habilitado').checked = tienePromo ? (p.promociones_habilitado !== false) : true;
+      document.getElementById('param-promociones-habilitado').disabled = !tienePromo;
+      document.getElementById('param-promociones-hint').textContent = tienePromo
+        ? 'Si está apagado, la caseta solo imprime el boleto de estacionamiento — nunca busca ni imprime el voucher de promoción, aunque haya una campaña activa configurada.'
+        : 'Falta correr el ALTER TABLE (ver instrucciones) para poder usar este interruptor.';
+      if (tieneHorarios) {
+        document.getElementById('param-hora-apertura').value = (p.hora_apertura||'').slice(0,5);
+        document.getElementById('param-hora-relevo1').value  = (p.hora_relevo_1||'').slice(0,5);
+        document.getElementById('param-hora-relevo2').value  = (p.hora_relevo_2||'').slice(0,5);
+        document.getElementById('param-hora-cierre').value   = (p.hora_cierre||'').slice(0,5);
+      }
+      document.getElementById('param-tarifa-normal').value  = p.tarifa_normal  ?? '';
+      document.getElementById('param-tarifa-pref').value    = p.tarifa_pref    ?? '';
+      document.getElementById('param-tarifa-perdido').value = p.tarifa_perdido ?? '';
+      document.getElementById('param-tolerancia').value     = p.tolerancia_min ?? '';
+      document.getElementById('param-redondeo-habilitado').checked  = tieneRedondeo ? !!p.tolerancia_redondeo_habilitado : false;
+      document.getElementById('param-redondeo-habilitado').disabled = !tieneRedondeo;
+      document.getElementById('param-redondeo-min').value    = tieneRedondeo ? (p.tolerancia_redondeo_min ?? 5) : '';
+      document.getElementById('param-redondeo-min').disabled = !tieneRedondeo || !p.tolerancia_redondeo_habilitado;
+      document.getElementById('param-redondeo-hint').textContent = tieneRedondeo
+        ? 'Si un auto se pasa por pocos minutos de una hora completa, no se le cobra la hora siguiente entera. No afecta la tolerancia de cortesía de arriba (esa sigue siendo solo para la primera hora).'
+        : 'Falta correr el ALTER TABLE (ver instrucciones) para poder usar esta tolerancia.';
+      _TIENE_REDONDEO = tieneRedondeo;
+      document.getElementById('param-empresa-grupo').value  = p.empresa_grupo || '';
+      document.getElementById('param-rfc').value             = p.rfc || '';
+      document.getElementById('param-ciudad').value          = p.ciudad || '';
+      document.getElementById('param-estado').value          = p.estado || '';
+      document.getElementById('param-direccion').value       = p.direccion || '';
+    }
+  } catch (e) { showToast('No se pudo cargar la plaza'); }
+}
+
+async function guardarCapacidad() {
+  const val = parseInt(document.getElementById('param-capacidad').value);
+  const nombre = document.getElementById('param-edificio-nombre').value.trim();
+  if (!val || val < 1 || !PARAM_PLAZA_ID) { showToast('Cantidad inválida'); return; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify({ capacidad_total: val, ...(nombre ? {nombre} : {}) })
+    });
+    showToast(r.ok ? 'Edificio actualizado · '+val+' cajones' : 'Error al guardar');
+    if (r.ok) cargarDatos();
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function guardarHorarios() {
+  if (!PARAM_PLAZA_ID) { showToast('Falta cargar la plaza'); return; }
+  const body = {
+    hora_apertura: document.getElementById('param-hora-apertura').value || null,
+    hora_relevo_1: document.getElementById('param-hora-relevo1').value || null,
+    hora_relevo_2: document.getElementById('param-hora-relevo2').value || null,
+    hora_cierre:   document.getElementById('param-hora-cierre').value || null,
+  };
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify(body)
+    });
+    showToast(r.ok ? 'Horarios actualizados' : 'Error al guardar (¿ya corriste el ALTER TABLE?)');
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function guardarUrlFacturacion() {
+  const val = document.getElementById('param-url-facturacion').value.trim();
+  if (!PARAM_PLAZA_ID) { showToast('Falta cargar la plaza'); return; }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify({ url_facturacion: val })
+    });
+    showToast(r.ok ? 'URL de facturación actualizada' : 'Error al guardar (¿ya corriste el ALTER TABLE?)');
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function guardarPromocionesHabilitado() {
+  if (!PARAM_PLAZA_ID) { showToast('Falta cargar la plaza'); return; }
+  const val = document.getElementById('param-promociones-habilitado').checked;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify({ promociones_habilitado: val })
+    });
+    showToast(r.ok ? ('Promociones ' + (val ? 'activadas' : 'desactivadas')) : 'Error al guardar (¿ya corriste el ALTER TABLE?)');
+    if (r.ok) logBitacora('promo_toggle', { habilitado: val });
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function guardarTarifas() {
+  if (!PARAM_PLAZA_ID) { showToast('Falta cargar la plaza'); return; }
+  const body = {
+    tarifa_normal:  parseFloat(document.getElementById('param-tarifa-normal').value)  || 0,
+    tarifa_pref:    parseFloat(document.getElementById('param-tarifa-pref').value)    || 0,
+    tarifa_perdido: parseFloat(document.getElementById('param-tarifa-perdido').value) || 0,
+    tolerancia_min: parseInt(document.getElementById('param-tolerancia').value)       || 0,
+  };
+  // Los 2 campos de redondeo solo se mandan si ya corrió el ALTER TABLE —
+  // si se mandan sin que existan las columnas, PostgREST rechaza el PATCH
+  // completo y ni siquiera se guardarían las tarifas normales.
+  if (_TIENE_REDONDEO) {
+    body.tolerancia_redondeo_habilitado = document.getElementById('param-redondeo-habilitado').checked;
+    body.tolerancia_redondeo_min = parseInt(document.getElementById('param-redondeo-min').value) || 0;
+  }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify(body)
+    });
+    showToast(r.ok ? 'Tarifas actualizadas' : 'Error al guardar (¿ya corriste el ALTER TABLE?)');
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function guardarDatosFiscales() {
+  if (!PARAM_PLAZA_ID) { showToast('Falta cargar la plaza'); return; }
+  const body = {
+    empresa_grupo: document.getElementById('param-empresa-grupo').value.trim() || null,
+    rfc:           document.getElementById('param-rfc').value.trim() || null,
+    ciudad:        document.getElementById('param-ciudad').value.trim() || null,
+    estado:        document.getElementById('param-estado').value.trim() || null,
+    direccion:     document.getElementById('param-direccion').value.trim() || null,
+  };
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?plaza_id=eq.${PARAM_PLAZA_ID}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify(body)
+    });
+    showToast(r.ok ? 'Datos fiscales actualizados' : 'Error al guardar');
+  } catch (e) { showToast('Error al guardar'); }
+}
+
+async function cargarCajeros() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cajeros?select=cajero_id,nombre,usuario,rol,activo&order=nombre.asc`, { headers: SB_HEADERS_PARAM });
+    const cajeros = r.ok ? await r.json() : [];
+    renderCajeros(cajeros);
+  } catch (e) { renderCajeros([]); }
+}
+
+const ROL_LABEL = { cajero:'Operador', admin_plaza:'Admin. plaza', corporativo:'Oficina central', super_admin:'Super admin' };
+
+function renderCajeros(cajeros) {
+  document.getElementById('cajeros-count').textContent = cajeros.length;
+  const cont = document.getElementById('lista-cajeros');
+  if (!cajeros.length) {
+    cont.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sin operadores registrados todavía.</div>';
+    return;
+  }
+  cont.innerHTML = cajeros.map(c => `
+    <div class="cajero-list-row">
+      <span style="flex:1;font-weight:700">${c.nombre}</span>
+      <span style="color:var(--muted)">${c.usuario}</span>
+      <span class="rol-badge">${ROL_LABEL[c.rol] || c.rol}</span>
+      ${c.activo ? '' : '<span class="estado-inactivo">Inactivo</span>'}
+      <button class="param-btn outline" style="padding:4px 10px;font-size:11px"
+              onclick="toggleCajero('${c.cajero_id}', ${!c.activo})">${c.activo ? 'Desactivar' : 'Activar'}</button>
+    </div>`).join('');
+}
+
+// Hash simple client-side para la contraseña de login — mismo nivel de
+// robustez que el NIP de cierre que ya existía (no es un backend con bcrypt,
+// pero evita guardar la contraseña en texto plano).
+async function sha256Hex(texto) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function agregarCajero() {
+  const nombre  = document.getElementById('nuevo-cajero-nombre').value.trim();
+  const usuario = document.getElementById('nuevo-cajero-usuario').value.trim();
+  const password = document.getElementById('nuevo-cajero-password').value;
+  const rol     = document.getElementById('nuevo-cajero-rol').value;
+  if (!nombre || !usuario) { showToast('Falta nombre o usuario'); return; }
+  if (!password || password.length < 4) { showToast('La contraseña debe tener al menos 4 caracteres'); return; }
+  try {
+    const password_hash = await sha256Hex(password);
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cajeros`, {
+      method: 'POST', headers: { ...SB_HEADERS_PARAM, Prefer: 'return=minimal' },
+      body: JSON.stringify({ plaza_id: PARAM_PLAZA_ID, nombre, usuario, password_hash, rol, activo: true })
+    });
+    if (r.ok) {
+      document.getElementById('nuevo-cajero-nombre').value = '';
+      document.getElementById('nuevo-cajero-usuario').value = '';
+      document.getElementById('nuevo-cajero-password').value = '';
+      showToast('Operador agregado · '+nombre);
+      cargarCajeros();
+    } else if (r.status === 400 || r.status === 404) {
+      showToast('Error: ¿ya corriste el ALTER TABLE de password_hash?');
+    } else {
+      showToast('Error: revisa que el usuario no esté repetido');
+    }
+  } catch (e) { showToast('Error al agregar'); }
+}
+
+async function toggleCajero(cajeroId, nuevoActivo) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cajeros?cajero_id=eq.${cajeroId}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify({ activo: nuevoActivo })
+    });
+    if (r.ok) cargarCajeros();
+  } catch (e) { showToast('Error al actualizar'); }
+}
+
+// ══ EMPLEADOS (catálogo para la cortesía de estacionamiento) ══
+async function cargarEmpleados() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/empleados?select=id,nombre_completo,puesto,area,activo&order=nombre_completo.asc`, { headers: SB_HEADERS_PARAM });
+    const empleados = r.ok ? await r.json() : [];
+    renderEmpleados(empleados);
+  } catch (e) { renderEmpleados([]); }
+}
+
+// Escapa para insertar de forma segura dentro de un atributo HTML
+// entrecomillado (" ") — antes el nombre se interpolaba directo en un
+// onclick="..." con comillas simples propias; un nombre con comillas dobles,
+// simples o &/< rompía el atributo y el botón quedaba muerto sin avisar.
+function escHtmlAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function renderEmpleados(empleados) {
+  document.getElementById('empleados-count').textContent = empleados.length;
+  const cont = document.getElementById('lista-empleados');
+  if (!empleados.length) {
+    cont.innerHTML = '<div style="font-size:12px;color:var(--muted)">Sin empleados registrados todavía.</div>';
+    return;
+  }
+  cont.innerHTML = empleados.map(e => `
+    <div class="cajero-list-row">
+      <span style="flex:1;font-weight:700">${escHtmlAttr(e.nombre_completo)}</span>
+      <span style="color:var(--muted)">${escHtmlAttr(e.puesto) || '—'}</span>
+      <span style="color:var(--muted)">${escHtmlAttr(e.area) || '—'}</span>
+      ${e.activo ? '' : '<span class="estado-inactivo">Inactivo</span>'}
+      <button class="param-btn outline" style="padding:4px 10px;font-size:11px"
+              data-id="${e.id}" data-nombre="${escHtmlAttr(e.nombre_completo)}" data-puesto="${escHtmlAttr(e.puesto)}" data-area="${escHtmlAttr(e.area)}" onclick="editarEmpleadoBtn(this)">Editar</button>
+      <button class="param-btn outline" style="padding:4px 10px;font-size:11px"
+              data-id="${e.id}" data-activo="${e.activo}" onclick="toggleEmpleadoBtn(this)">${e.activo ? 'Desactivar' : 'Activar'}</button>
+      <button class="param-btn outline" style="padding:4px 10px;font-size:11px;color:var(--red);border-color:var(--red)"
+              data-id="${e.id}" data-nombre="${escHtmlAttr(e.nombre_completo)}" onclick="eliminarEmpleadoBtn(this)">Eliminar</button>
+    </div>`).join('');
+}
+// Los botones leen id/nombre de data-* (no de un onclick con la cadena ya
+// interpolada) — así un nombre con comillas/& nunca rompe el atributo ni
+// deja el botón sin funcionar.
+function toggleEmpleadoBtn(btn) {
+  toggleEmpleado(btn.dataset.id, btn.dataset.activo !== 'true');
+}
+function eliminarEmpleadoBtn(btn) {
+  eliminarEmpleado(btn.dataset.id, btn.dataset.nombre);
+}
+
+// Editar reutiliza el mismo formulario de alta (nombre/puesto/área): al
+// entrar en modo edición se precargan los campos con los datos actuales
+// del empleado y el botón "+ Agregar" pasa a guardar los cambios (PATCH)
+// en vez de crear uno nuevo — evita duplicar un modal aparte solo para 3
+// campos.
+let _empleadoEditandoId = null;
+function editarEmpleadoBtn(btn) {
+  _empleadoEditandoId = btn.dataset.id;
+  document.getElementById('nuevo-empleado-nombre').value = btn.dataset.nombre || '';
+  document.getElementById('nuevo-empleado-puesto').value = btn.dataset.puesto || '';
+  document.getElementById('nuevo-empleado-area').value = btn.dataset.area || '';
+  document.getElementById('btn-guardar-empleado').textContent = '💾 Guardar cambios';
+  document.getElementById('btn-cancelar-edicion-empleado').style.display = '';
+  document.getElementById('nuevo-empleado-nombre').focus();
+}
+function cancelarEdicionEmpleado() {
+  _empleadoEditandoId = null;
+  document.getElementById('nuevo-empleado-nombre').value = '';
+  document.getElementById('nuevo-empleado-puesto').value = '';
+  document.getElementById('nuevo-empleado-area').value = '';
+  document.getElementById('btn-guardar-empleado').textContent = '+ Agregar';
+  document.getElementById('btn-cancelar-edicion-empleado').style.display = 'none';
+}
+
+async function agregarEmpleado() {
+  const nombre_completo = document.getElementById('nuevo-empleado-nombre').value.trim();
+  const puesto = document.getElementById('nuevo-empleado-puesto').value.trim();
+  const area = document.getElementById('nuevo-empleado-area').value.trim();
+  if (!nombre_completo) { showToast('Falta el nombre completo'); return; }
+  if (_empleadoEditandoId) {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/empleados?id=eq.${_empleadoEditandoId}`, {
+        method: 'PATCH', headers: { ...SB_HEADERS_PARAM, Prefer: 'return=minimal' },
+        body: JSON.stringify({ nombre_completo, puesto: puesto || null, area: area || null })
+      });
+      if (r.ok) {
+        showToast('Empleado actualizado · '+nombre_completo);
+        cancelarEdicionEmpleado();
+        cargarEmpleados();
+      } else {
+        showToast('Error al guardar los cambios');
+      }
+    } catch (e) { showToast('Error al guardar los cambios'); }
+    return;
+  }
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/empleados`, {
+      method: 'POST', headers: { ...SB_HEADERS_PARAM, Prefer: 'return=minimal' },
+      body: JSON.stringify({ plaza_id: PARAM_PLAZA_ID, nombre_completo, puesto: puesto || null, area: area || null, activo: true })
+    });
+    if (r.ok) {
+      document.getElementById('nuevo-empleado-nombre').value = '';
+      document.getElementById('nuevo-empleado-puesto').value = '';
+      document.getElementById('nuevo-empleado-area').value = '';
+      showToast('Empleado agregado · '+nombre_completo);
+      cargarEmpleados();
+    } else {
+      showToast('Error: ¿ya corriste el SQL de la tabla empleados?');
+    }
+  } catch (e) { showToast('Error al agregar'); }
+}
+
+async function toggleEmpleado(id, nuevoActivo) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/empleados?id=eq.${id}`, {
+      method: 'PATCH', headers: SB_HEADERS_PARAM, body: JSON.stringify({ activo: nuevoActivo })
+    });
+    if (r.ok) cargarEmpleados();
+  } catch (e) { showToast('Error al actualizar'); }
+}
+
+// Eliminación real (DELETE), distinta de "Desactivar" (que solo oculta al
+// empleado del combo de selección en TABLET pero conserva el registro) —
+// para limpiar de una vez registros de prueba duplicados como el catálogo
+// llegó a acumular. Requiere confirmación por ser irreversible.
+async function eliminarEmpleado(id, nombre) {
+  if (!confirm('¿Eliminar definitivamente a "' + nombre + '"? Esta acción no se puede deshacer.')) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/empleados?id=eq.${id}`, {
+      method: 'DELETE', headers: SB_HEADERS_PARAM
+    });
+    if (r.ok) { showToast('Empleado eliminado'); cargarEmpleados(); }
+    else showToast('Error al eliminar');
+  } catch (e) { showToast('Error al eliminar'); }
+}
+
+// ══ UTILS ══
+function fmt$(n) {
+  return '$' + (n||0).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+let _tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_tt); _tt = setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ══ LOGIN (Fase B) ══ requiere usuario/contraseña contra 'cajeros' antes de
+// usar la app. Sesión válida mientras dure la pestaña (sessionStorage).
+// sha256Hex() ya está definida arriba (se usa también al crear operadores).
+function opUsuarioActual() {
+  try { return JSON.parse(sessionStorage.getItem('onlypark_usuario') || 'null'); } catch(e) { return null; }
+}
+function cerrarSesion() { sessionStorage.removeItem('onlypark_usuario'); location.reload(); }
+
+let _opRolesPermitidos = [];
+let _opLoginResolve = null;
+function requerirLogin(rolesPermitidos, nombreApp) {
+  _opRolesPermitidos = rolesPermitidos;
+  const actual = opUsuarioActual();
+  if (actual && rolesPermitidos.includes(actual.rol)) return Promise.resolve(actual);
+  document.getElementById('op-login-app-nombre').textContent = nombreApp || '';
+  document.getElementById('op-login-overlay').classList.remove('hidden');
+  document.getElementById('op-login-usuario').focus();
+  return new Promise(res => { _opLoginResolve = res; });
+}
+async function opIntentarLogin() {
+  const usuario = document.getElementById('op-login-usuario').value.trim();
+  const password = document.getElementById('op-login-password').value;
+  const errEl = document.getElementById('op-login-error');
+  errEl.textContent = '';
+  if (!usuario || !password) { errEl.textContent = 'Ingresa usuario y contraseña'; return; }
+  try {
+    // login_cajero() es una función en la base (RPC) que compara el hash
+    // internamente y solo regresa los datos públicos si coincide — nunca
+    // expone password_hash al cliente, a diferencia de leer la tabla directo.
+    const hash = await sha256Hex(password);
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/login_cajero`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_usuario: usuario, p_password_hash: hash })
+    });
+    if (!r.ok) { errEl.textContent = 'No se pudo validar (revisa tu conexión)'; return; }
+    const rows = await r.json();
+    const cajero = rows[0];
+    if (!cajero) {
+      errEl.textContent = 'Usuario o contraseña incorrectos'; return;
+    }
+    if (!_opRolesPermitidos.includes(cajero.rol)) {
+      errEl.textContent = 'Tu usuario no tiene permiso para entrar aquí'; return;
+    }
+    const datosUsuario = { cajero_id: cajero.cajero_id, nombre: cajero.nombre, usuario: cajero.usuario, rol: cajero.rol };
+    sessionStorage.setItem('onlypark_usuario', JSON.stringify(datosUsuario));
+    document.getElementById('op-login-overlay').classList.add('hidden');
+    document.getElementById('op-login-usuario').value = '';
+    document.getElementById('op-login-password').value = '';
+    if (_opLoginResolve) { _opLoginResolve(datosUsuario); _opLoginResolve = null; }
+  } catch (e) { errEl.textContent = 'No se pudo validar (revisa tu conexión)'; }
+}
+document.addEventListener('keydown', e => {
+  const overlay = document.getElementById('op-login-overlay');
+  if (e.key === 'Enter' && overlay && !overlay.classList.contains('hidden')) opIntentarLogin();
+});
+
+// Bitácora de acciones (Fase E) — registro de auditoría best-effort: nunca
+// bloquea ni interrumpe la operación real si falla o no hay conexión.
+let _ipCacheAdm = null;
+async function obtenerIPAdm() {
+  if (_ipCacheAdm) return _ipCacheAdm;
+  try {
+    const r = await fetch('https://api.ipify.org?format=json');
+    const j = await r.json();
+    _ipCacheAdm = j.ip || null;
+  } catch (e) { _ipCacheAdm = null; }
+  return _ipCacheAdm;
+}
+async function logBitacora(accion, detalle) {
+  try {
+    const ip = await obtenerIPAdm();
+    fetch(`${SUPABASE_URL}/rest/v1/bitacora`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        plaza_id: (typeof PARAM_PLAZA_ID !== 'undefined' && PARAM_PLAZA_ID) || null,
+        usuario: USUARIO_ACTUAL ? (USUARIO_ACTUAL.usuario || USUARIO_ACTUAL.nombre) : null,
+        accion, detalle: detalle || null, ip
+      })
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+// Control de versiones: si el servidor ya tiene una versión más nueva que
+// la que trae cargada esta pestaña (grabada por deploy.sh/deploy_prod2.sh
+// en versiones_app), obliga a actualizar antes de seguir usando el
+// sistema — el modal no tiene botón de cancelar, solo se cierra
+// actualizando de verdad.
+let _actualizacionObligatoriaMostrada = false;
+async function verificarVersionServidor() {
+  if (_actualizacionObligatoriaMostrada) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/versiones_app?app=eq.admin&select=version`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!rows.length) return;
+    const versionServidor = rows[0].version;
+    const badge = document.getElementById('app-version');
+    const versionLocal = parseInt((badge && badge.textContent || '').replace(/\D/g, ''), 10) || 0;
+    if (versionServidor > versionLocal) {
+      _actualizacionObligatoriaMostrada = true;
+      mostrarModalActualizacionObligatoria(versionServidor);
+    }
+  } catch (e) { /* sin conexión: se reintenta en la siguiente revisión */ }
+}
+function mostrarModalActualizacionObligatoria(versionServidor) {
+  const div = document.createElement('div');
+  div.className = 'modal-overlay open';
+  div.style.zIndex = '9999';
+  div.innerHTML = `
+    <div class="modal-box" style="max-width:420px">
+      <div class="modal-head"><span class="modal-title">🆕 Nueva versión disponible (v${versionServidor})</span></div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:var(--muted);line-height:1.7">Hay una versión más reciente del sistema. Debes actualizar antes de continuar.</div>
+        <button id="btn-actualizar-obligatorio" style="width:100%;padding:12px;border-radius:8px;border:none;background:#3aa757;color:#fff;font-weight:700;font-size:14px;cursor:pointer">⟳ Actualizar ahora</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  document.getElementById('btn-actualizar-obligatorio').onclick = async () => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(reg => reg.unregister()));
+      }
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (e) {}
+    location.reload();
+  };
+}
+
+// ══ INIT ══
+let USUARIO_ACTUAL = null;
+(async () => {
+  USUARIO_ACTUAL = await requerirLogin(['admin_plaza','super_admin'], 'Administrador de plaza');
+  document.getElementById('nav-usuario').textContent = '👤 ' + USUARIO_ACTUAL.nombre;
+  logBitacora('login', { app: 'admin' });
+  document.getElementById('filtro-periodo').value = 'hoy';
+  aplicarModoTab();
+  cargarDatos();
+  setInterval(cargarDatos, 60000); // auto-refresh cada minuto
+  actualizarBadgePreguntas();
+  setInterval(actualizarBadgePreguntas, 60000);
+  verificarVersionServidor();
+  setInterval(verificarVersionServidor, 60000);
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>

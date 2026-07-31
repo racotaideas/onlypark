@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONLYPARK · Portales</title>
+<style>
+:root {
+  --bg:#F5F5F7; --white:#fff; --border:#D2D2D7;
+  --purple:#0d2340; --blue:#0d2340; --green:#3aa757;
+  --gold:#F5A623; --red:#D93025; --text:#1D1D1F; --muted:#6E6E73;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+nav{background:#1D1D1F;padding:0 24px;height:52px;display:flex;align-items:center;
+    gap:12px;position:sticky;top:0;z-index:100}
+.nav-logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px}
+.nav-title{font-size:14px;font-weight:700;color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.nav-clock{font-size:12px;color:#888;font-family:monospace}
+
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+     padding:40px 24px}
+.encabezado{text-align:center;margin-bottom:36px}
+.encabezado h1{font-size:26px;font-weight:900;margin-bottom:6px}
+.encabezado p{font-size:14px;color:var(--muted)}
+
+.portales{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1000px;width:100%}
+@media(max-width:850px){.portales{grid-template-columns:1fr;max-width:400px}}
+
+.portal{background:var(--white);border:1px solid var(--border);border-radius:16px;
+        padding:32px 26px;text-align:center;text-decoration:none;color:var(--text);
+        box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .15s,box-shadow .15s;
+        display:flex;flex-direction:column;align-items:center;gap:10px}
+.portal:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.12)}
+.portal-ico{width:64px;height:64px;border-radius:16px;display:flex;align-items:center;
+            justify-content:center;font-size:30px;margin-bottom:6px}
+.portal-titulo{font-size:17px;font-weight:800}
+.portal-desc{font-size:12.5px;color:var(--muted);line-height:1.5}
+.portal-badge{margin-top:8px;font-size:10px;font-weight:700;text-transform:uppercase;
+              letter-spacing:.6px;padding:4px 10px;border-radius:99px}
+
+.p-operador .portal-ico{background:#e6f2eb;color:var(--blue)}
+.p-operador .portal-badge{background:#e6f2eb;color:var(--blue)}
+.p-admin .portal-ico{background:#eef2f7;color:var(--purple)}
+.p-admin .portal-badge{background:#eef2f7;color:var(--purple)}
+.p-central .portal-ico{background:#FFF8E1;color:var(--gold)}
+.p-central .portal-badge{background:#FFF8E1;color:#B8860B}
+
+footer{text-align:center;padding:16px;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">·OP·</span>
+  <span class="nav-title">ONLYPARK</span>
+  <div class="nav-right">
+    <span class="nav-clock" id="nav-clock">--:--:--</span>
+  </div>
+</nav>
+
+<main>
+  <div class="encabezado">
+    <h1>ONLYPARK</h1>
+    <p>Selecciona el portal al que quieres entrar</p>
+  </div>
+
+  <div class="portales">
+    <a class="portal p-operador" href="operador.html">
+      <div class="portal-ico">🎫</div>
+      <div class="portal-titulo">Operador</div>
+      <div class="portal-desc">Caja: entradas, cobros, cortes de turno y relevos.</div>
+      <div class="portal-badge">Cajero</div>
+    </a>
+
+    <a class="portal p-admin" href="admin.html">
+      <div class="portal-ico">🏢</div>
+      <div class="portal-titulo">Administrador de la plaza</div>
+      <div class="portal-desc">KPIs del día, ocupación, cajeros, pensiones y parámetros.</div>
+      <div class="portal-badge">Admin plaza</div>
+    </a>
+
+    <a class="portal p-central" href="corporativo.html">
+      <div class="portal-ico">📊</div>
+      <div class="portal-titulo">Oficina central</div>
+      <div class="portal-desc">Vista ejecutiva, demanda y desempeño de la operación.</div>
+      <div class="portal-badge">Corporativo</div>
+    </a>
+  </div>
+</main>
+
+<footer>ONLYPARK · ONLYPARK · <span id="app-version">v184</span></footer>
+
+<script>
+function actualizarReloj() {
+  document.getElementById('nav-clock').textContent =
+    new Date().toLocaleTimeString('es-MX');
+}
+actualizarReloj();
+setInterval(actualizarReloj, 1000);
+</script>
+
+</body>
+</html>
