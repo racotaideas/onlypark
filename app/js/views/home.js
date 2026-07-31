@@ -12,6 +12,9 @@ export async function renderHome(root) {
 
     <main class="flex-1 p-6 max-w-5xl mx-auto w-full">
       <h1 class="text-2xl font-bold text-marino mb-4">Panel</h1>
+      <nav class="mb-4 flex gap-2">
+        <a href="#/catalogos/grupos" class="op-btn-primary text-sm">Catálogos</a>
+      </nav>
       <div id="op-perfil" class="op-card mb-4">Cargando perfil…</div>
       <div id="op-empresas" class="op-card mb-4">Cargando empresas visibles…</div>
       <div id="op-estacionamientos" class="op-card">Cargando estacionamientos visibles…</div>

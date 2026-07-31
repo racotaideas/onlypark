@@ -1,8 +1,9 @@
 // Punto de entrada de la PWA.
 import { supabase, getSession } from './supabase.js';
-import { renderLogin }   from './views/login.js';
-import { renderHome }    from './views/home.js';
-import { renderNotFound }from './views/notfound.js';
+import { renderLogin }     from './views/login.js';
+import { renderHome }      from './views/home.js';
+import { renderCatalogos } from './views/catalogos.js';
+import { renderNotFound }  from './views/notfound.js';
 
 const app = document.getElementById('app');
 
@@ -15,6 +16,10 @@ async function router() {
   }
   if (session && (path === '/' || path === '/login')) {
     return renderHome(app);
+  }
+  if (path.startsWith('/catalogos')) {
+    const tab = path.split('/')[2] || 'grupos';
+    return renderCatalogos(app, tab);
   }
   switch (path) {
     case '/login':   return renderLogin(app);

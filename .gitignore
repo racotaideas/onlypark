@@ -8,6 +8,7 @@ build/
 .env
 .env.*
 !.env.example
+app/js/env.local.js
 *.pem
 *.key
 *.crt
