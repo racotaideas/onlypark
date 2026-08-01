@@ -10,6 +10,8 @@ import { renderPensiones } from './views/pensiones.js?v=6';
 import { renderParametros } from './views/parametros.js?v=2';
 import { renderEmpleados } from './views/empleados.js?v=2';
 import { renderUsuarios }  from './views/usuarios.js?v=2';
+import { renderSupervisor } from './views/supervisor.js?v=1';
+import { renderCamara }    from './views/camara.js?v=1';
 import { renderNotFound }  from './views/notfound.js?v=5';
 
 const app = document.getElementById('app');
@@ -43,6 +45,8 @@ async function router() {
     case '/parametros': return renderParametros(app);
     case '/empleados':  return renderEmpleados(app);
     case '/usuarios':   return renderUsuarios(app);
+    case '/supervisor': return renderSupervisor(app);
+    case '/camara':     return renderCamara(app);
     default:            return renderNotFound(app, path);
   }
 }
@@ -60,3 +64,20 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch((e) => console.warn('SW:', e));
   });
 }
+
+// PWA install prompt (Chrome / Edge / Samsung Internet)
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstall = e;
+  const btn = document.getElementById('btn-install');
+  if (btn) btn.classList.remove('hidden');
+});
+document.addEventListener('click', async (ev) => {
+  if (ev.target && ev.target.id === 'btn-install' && deferredInstall) {
+    deferredInstall.prompt();
+    await deferredInstall.userChoice;
+    deferredInstall = null;
+    ev.target.classList.add('hidden');
+  }
+});

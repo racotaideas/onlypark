@@ -3,11 +3,21 @@
   "short_name": "ONLYPARK",
   "description": "Plataforma SaaS de administración inteligente de estacionamientos",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "any",
   "background_color": "#0d2340",
   "theme_color": "#0d2340",
-  "orientation": "portrait-primary",
+  "categories": ["business", "productivity"],
+  "lang": "es-MX",
   "icons": [
-    { "src": "/assets/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/assets/logo.png",  "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/logo.png",  "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/logo.svg",  "sizes": "any",     "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Panel principal",  "short_name": "Panel",  "url": "/",              "icons":[{"src":"/assets/logo.png","sizes":"192x192"}] },
+    { "name": "Cajero",           "short_name": "Cajero", "url": "/portales/operador.html", "icons":[{"src":"/assets/logo.png","sizes":"192x192"}] },
+    { "name": "Supervisor",       "short_name": "Super",  "url": "/#/supervisor",  "icons":[{"src":"/assets/logo.png","sizes":"192x192"}] }
   ]
 }

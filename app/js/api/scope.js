@@ -81,16 +81,16 @@ export async function renderScopeSelector(container) {
   container.innerHTML = `
     <div class="flex flex-wrap items-center gap-2 text-xs">
       <span class="text-white/70 hidden sm:inline uppercase tracking-wider text-[10px]">Ámbito:</span>
-      <select id="scope-grp" class="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1 outline-none border border-white/20 min-w-[130px]">
+      <select id="scope-grp" class="op-scope-select min-w-[130px]">
         <option value="">Todos los grupos${grupos.length ? '' : ' (cargando…)'}</option>
         ${grupos.map(g => `<option value="${g.grupo_id}" ${s.grupo_id===g.grupo_id?'selected':''}>${g.nombre}</option>`).join('')}
       </select>
       <span class="text-white/40">›</span>
-      <select id="scope-emp" class="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1 outline-none border border-white/20 min-w-[170px]">
+      <select id="scope-emp" class="op-scope-select min-w-[170px]">
         <option value="">Todas las empresas</option>
       </select>
       <span class="text-white/40">›</span>
-      <select id="scope-est" class="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1 outline-none border border-white/20 min-w-[170px]">
+      <select id="scope-est" class="op-scope-select min-w-[170px]">
         <option value="">Todos los estacionamientos</option>
       </select>
       <button id="scope-reset" class="ml-1 text-white/60 hover:text-white text-[11px] underline">reset</button>
