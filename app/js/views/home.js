@@ -1,6 +1,6 @@
 import { supabase } from '../supabase.js';
 import { currentActor } from '../api/log.js';
-import { renderScopeSelector, applyScope, scopedEstacionamientos, scopedEmpresas, getScope } from '../api/scope.js';
+import { renderScopeSelector, scopedEstacionamientos, scopedEmpresas, scopedGrupos, getScope, scopeLabel } from '../api/scope.js';
 
 export async function renderHome(root) {
   const actor = currentActor();
@@ -99,17 +99,12 @@ function modulo(href, titulo, icono, sub, externo) {
 }
 
 async function refresh(root) {
-  const s = getScope();
-  const [emp, est] = await Promise.all([scopedEmpresas(), scopedEstacionamientos()]);
+  const [grp, emp, est, label] = await Promise.all([scopedGrupos(), scopedEmpresas(), scopedEstacionamientos(), scopeLabel()]);
   const cajones = est.reduce((a,x)=>a+(x.capacidad_total||0),0);
   root.querySelector('#kpi-empresas').textContent = emp.length;
   root.querySelector('#kpi-est').textContent = est.length;
   root.querySelector('#kpi-cajones').textContent = cajones.toLocaleString();
-
-  const label = !s.empresa_id ? 'Ámbito: Corporativo · todas las empresas'
-    : s.estacionamiento_id ? `Ámbito: ${emp[0]?.razon_social ?? '—'} · ${est[0]?.nombre ?? '—'}`
-    : `Ámbito: ${emp[0]?.razon_social ?? '—'} · todos los estacionamientos`;
-  root.querySelector('#scope-label').textContent = label;
+  root.querySelector('#scope-label').textContent = 'Ámbito: ' + label;
 
   const idsEst = est.map(x => x.estacionamiento_id);
 
