@@ -78,18 +78,32 @@
   var FIELDS_TO_STRIP = ['franja','dia_semana','mes','anio','penalizacion','plaza','fecha_op','horas_cobradas','tarifa','minutos_estancia'];
 
   // Puente entre panel principal y portal:
-  // Si el user eligió una plaza específica en el panel (op_scope_estacionamiento_id),
-  // el portal debe operar sobre ESA plaza (no la primera de dim_plaza). Esto simula
-  // que Roberto está "logueado como admin de plaza 18": cualquier ticket que capture
-  // va tagged con esa plaza.
+  // Lee el ámbito de la URL (?est=, ?e=, ?g=, ?actor=). Si viene con params,
+  // los guarda en localStorage sobrescribiendo cualquier valor previo — así el
+  // portal recibe el "login context" que el user eligió en el panel.
+  // Fallback: si no hay params, usa lo que ya haya en localStorage.
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('actor')) { nombre = qs.get('actor').trim(); localStorage.setItem('op_actor', nombre); usuarioFake.nombre = nombre; usuarioFake.usuario = nombre.toLowerCase().replace(/\s+/g,'_'); try { sessionStorage.setItem('onlypark_usuario', JSON.stringify(usuarioFake)); } catch(e){} }
+  var qEst = qs.get('est'); var qEmp = qs.get('e'); var qGrp = qs.get('g');
+  if (qGrp && UUID_RE.test(qGrp)) localStorage.setItem('op_scope_grupo_id', qGrp);
+  if (qEmp && UUID_RE.test(qEmp)) localStorage.setItem('op_scope_empresa_id', qEmp);
+  if (qEst && UUID_RE.test(qEst)) localStorage.setItem('op_scope_estacionamiento_id', qEst);
+
   var scopeEst = localStorage.getItem('op_scope_estacionamiento_id');
   if (scopeEst && UUID_RE.test(scopeEst)) {
     window.__OP_SCOPE_PLAZA_ID__ = scopeEst;
-    // Cuando dim_plaza se lea (line 1480), interceptamos y forzamos ese plaza_id.
-    // Ademas seteamos window.PLAZA_ID desde ya para que el fetch shim de tickets
-    // lo use como fallback antes de que cargarParametrosPlaza corra.
     window.PLAZA_ID = scopeEst;
   }
+
+  // Banner de ámbito arriba del portal (muestra que "estás logueado" con ese scope)
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!scopeEst) return;
+    var banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0d2340;color:#fff;font-size:11px;padding:4px 12px;z-index:99998;text-align:center;letter-spacing:.3px;';
+    banner.innerHTML = 'Ámbito operativo: <b>' + nombre + '</b> · plaza ' + scopeEst.slice(0,8) + '… <a href="/" style="color:#3aa757;margin-left:12px;text-decoration:underline">← volver al panel</a>';
+    document.body.appendChild(banner);
+    document.body.style.paddingTop = '24px';
+  });
 
   var origFetch = window.fetch;
 

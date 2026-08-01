@@ -85,7 +85,18 @@ function kpi(id, label, color) {
 }
 
 function modulo(href, titulo, icono, sub, externo) {
-  const link = externo ? `href="${href}" target="_blank"` : `href="${href}"`;
+  let finalHref = href;
+  if (externo) {
+    // Anexar ámbito como URL params — el portal los lee como si fueran el "login context"
+    const s = getScope();
+    const p = new URLSearchParams();
+    if (s.grupo_id)           p.set('g',   s.grupo_id);
+    if (s.empresa_id)         p.set('e',   s.empresa_id);
+    if (s.estacionamiento_id) p.set('est', s.estacionamiento_id);
+    p.set('actor', localStorage.getItem('op_actor') || 'operador');
+    finalHref = href + (href.includes('?') ? '&' : '?') + p.toString();
+  }
+  const link = externo ? `href="${finalHref}" target="_blank"` : `href="${finalHref}"`;
   return `
     <a ${link} class="op-card hover:shadow-lg hover:border-marino transition group">
       <div class="flex items-center gap-3">
