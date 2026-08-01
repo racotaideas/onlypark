@@ -21,6 +21,21 @@
   [headers.values]
     Content-Type = "application/manifest+json"
 
+# Redirect 301: cualquier acceso via onlypark.netlify.app -> onlypark.click
+# Netlify solo hace match cuando la hostname del request es netlify.app.
+[[redirects]]
+  from = "https://onlypark.netlify.app/*"
+  to = "https://onlypark.click/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://onlypark.netlify.app/*"
+  to = "https://onlypark.click/:splat"
+  status = 301
+  force = true
+
+# SPA fallback (siempre al final)
 [[redirects]]
   from = "/*"
   to = "/index.html"
