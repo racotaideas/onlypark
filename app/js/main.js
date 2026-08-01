@@ -6,8 +6,10 @@ import { renderCatalogos } from './views/catalogos.js?v=4';
 import { renderReportes }  from './views/reportes.js?v=4';
 import { renderMonitor }   from './views/monitor.js?v=4';
 import { renderCamaras }   from './views/camaras.js?v=4';
-import { renderPensiones } from './views/pensiones.js?v=4';
+import { renderPensiones } from './views/pensiones.js?v=5';
 import { renderParametros } from './views/parametros.js?v=1';
+import { renderEmpleados } from './views/empleados.js?v=1';
+import { renderUsuarios }  from './views/usuarios.js?v=1';
 import { renderNotFound }  from './views/notfound.js?v=4';
 
 const app = document.getElementById('app');
@@ -39,6 +41,8 @@ async function router() {
     case '/camaras':    return renderCamaras(app);
     case '/pensiones':  return renderPensiones(app);
     case '/parametros': return renderParametros(app);
+    case '/empleados':  return renderEmpleados(app);
+    case '/usuarios':   return renderUsuarios(app);
     default:            return renderNotFound(app, path);
   }
 }

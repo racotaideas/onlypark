@@ -56,6 +56,8 @@ export async function renderHome(root) {
           ${modulo('#/camaras','Cámaras LPR','📹','Streams',false)}
           ${modulo('#/pensiones','Pensiones','🎟️','Pensionados',false)}
           ${modulo('#/parametros','Parámetros','⚙️','Tarifas y config por plaza',false)}
+          ${modulo('#/empleados','Empleados','👥','Personal con cortesía',false)}
+          ${modulo('#/usuarios','Usuarios','🔑','Cajeros y admins del sistema',false)}
         </div>
       </div>
 
