@@ -63,4 +63,52 @@
 
   // Exponer para debug
   window.__OP_USUARIO_FAKE__ = usuarioFake;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Interceptar fetch: normalizar el body que el IWOL manda a /tickets, /cortes,
+  // /bitacora y /avisos_operador para que caiga bien en nuestras shim views.
+  //
+  // El IWOL manda:
+  //   - plaza (string) en vez de plaza_id (uuid)
+  //   - turno_id como string local ('T1785...') que no es UUID valido
+  //   - campos que no son columnas (franja, dia_semana, mes, anio, penalizacion)
+  // Aqui limpiamos todo eso para que el trigger INSTEAD OF acepte.
+  // ─────────────────────────────────────────────────────────────────────────
+  var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  var FIELDS_TO_STRIP = ['franja','dia_semana','mes','anio','penalizacion','plaza'];
+  var origFetch = window.fetch;
+
+  window.fetch = function (url, opts) {
+    try {
+      if (opts && typeof opts.body === 'string' && typeof url === 'string' &&
+          (url.indexOf('/rest/v1/tickets') > 0 ||
+           url.indexOf('/rest/v1/cortes') > 0 ||
+           url.indexOf('/rest/v1/bitacora') > 0 ||
+           url.indexOf('/rest/v1/avisos_operador') > 0)) {
+        var body;
+        try { body = JSON.parse(opts.body); } catch (e) { body = null; }
+        if (body && typeof body === 'object' && !Array.isArray(body)) {
+          // Rellenar plaza_id desde PLAZA_ID global si falta
+          if (!body.plaza_id && typeof window.PLAZA_ID === 'string' && UUID_RE.test(window.PLAZA_ID)) {
+            body.plaza_id = window.PLAZA_ID;
+          }
+          // turno_id no-UUID -> null (por ahora ignoramos el vinculo a cortes_caja)
+          if (body.turno_id && !UUID_RE.test(String(body.turno_id))) {
+            body.turno_id = null;
+          }
+          if (body.turno_entrada && !UUID_RE.test(String(body.turno_entrada))) {
+            body.turno_entrada = null;
+          }
+          // Quitar campos que no son columnas
+          FIELDS_TO_STRIP.forEach(function (k) { delete body[k]; });
+          // Empleado_id / pension_id: si no son UUID, ponlos null
+          if (body.empleado_id && !UUID_RE.test(String(body.empleado_id))) body.empleado_id = null;
+          if (body.pension_id && !UUID_RE.test(String(body.pension_id))) body.pension_id = null;
+
+          opts = Object.assign({}, opts, { body: JSON.stringify(body) });
+        }
+      }
+    } catch (e) { console.warn('[no-login fetch shim]', e); }
+    return origFetch.call(this, url, opts);
+  };
 })();
