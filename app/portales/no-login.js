@@ -75,7 +75,7 @@
   // Aqui limpiamos todo eso para que el trigger INSTEAD OF acepte.
   // ─────────────────────────────────────────────────────────────────────────
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  var FIELDS_TO_STRIP = ['franja','dia_semana','mes','anio','penalizacion','plaza'];
+  var FIELDS_TO_STRIP = ['franja','dia_semana','mes','anio','penalizacion','plaza','fecha_op','horas_cobradas','tarifa','minutos_estancia'];
   var origFetch = window.fetch;
 
   window.fetch = function (url, opts) {

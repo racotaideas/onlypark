@@ -1,5 +1,5 @@
 // Service Worker mínimo v1 — cache-first para el shell, network-first para la API.
-const CACHE = 'onlypark-shell-v3';
+const CACHE = 'onlypark-shell-v4';
 const SHELL = ['/', '/index.html', '/css/app.css', '/js/main.js', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
