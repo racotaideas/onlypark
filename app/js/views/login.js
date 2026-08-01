@@ -54,14 +54,28 @@ export function renderLogin(root) {
       </div>
     </div>`;
 
-  root.querySelector('#op-form-login').addEventListener('submit', (e) => {
+  root.querySelector('#op-form-login').addEventListener('submit', async (e) => {
     e.preventDefault();
     const operador = new FormData(e.target).get('operador').trim();
     if (!operador) return;
     localStorage.setItem('op_actor', operador);
-    // Intento background — no bloquea la entrada
-    supabase.auth.signInWithPassword({ email: SHARED_EMAIL, password: SHARED_PASSWORD })
-      .catch((err) => console.warn('[ONLYPARK] shared signin failed (dev):', err));
+
+    // Deshabilita botón + spinner
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.classList.add('opacity-60','cursor-wait');
+    btn.querySelector('span').textContent = 'Autenticando…';
+
+    // AWAIT el signin antes de navegar — así todas las vistas ven la sesión establecida
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!data?.session) {
+        await Promise.race([
+          supabase.auth.signInWithPassword({ email: SHARED_EMAIL, password: SHARED_PASSWORD }),
+          new Promise(res => setTimeout(res, 4000))
+        ]);
+      }
+    } catch (err) { console.warn('[ONLYPARK] shared signin failed:', err); }
+
     window.location.hash = '/';
   });
 }

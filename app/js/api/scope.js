@@ -68,15 +68,22 @@ export async function scopedEstacionamientos() {
 // Renderiza el selector de 3 niveles en un contenedor.
 export async function renderScopeSelector(container) {
   const s = getScope();
-  const { data: grupos } = await supabase.from('grupos_empresariales')
-    .select('grupo_id, codigo, nombre').order('nombre');
+
+  // Retry hasta 3 veces con backoff si viene vacío (posible race con signin)
+  let grupos = [];
+  for (let i = 0; i < 3; i++) {
+    const { data } = await supabase.from('grupos_empresariales')
+      .select('grupo_id, codigo, nombre').order('nombre');
+    if (data && data.length) { grupos = data; break; }
+    await new Promise(res => setTimeout(res, 400));
+  }
 
   container.innerHTML = `
     <div class="flex flex-wrap items-center gap-2 text-xs">
       <span class="text-white/70 hidden sm:inline uppercase tracking-wider text-[10px]">Ámbito:</span>
       <select id="scope-grp" class="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1 outline-none border border-white/20 min-w-[130px]">
-        <option value="">Todos los grupos</option>
-        ${(grupos??[]).map(g => `<option value="${g.grupo_id}" ${s.grupo_id===g.grupo_id?'selected':''}>${g.nombre}</option>`).join('')}
+        <option value="">Todos los grupos${grupos.length ? '' : ' (cargando…)'}</option>
+        ${grupos.map(g => `<option value="${g.grupo_id}" ${s.grupo_id===g.grupo_id?'selected':''}>${g.nombre}</option>`).join('')}
       </select>
       <span class="text-white/40">›</span>
       <select id="scope-emp" class="bg-white/10 hover:bg-white/20 text-white rounded px-2 py-1 outline-none border border-white/20 min-w-[170px]">

@@ -1,16 +1,16 @@
 // Punto de entrada de la PWA.
 import { supabase } from './supabase.js';
-import { renderLogin }     from './views/login.js?v=4';
-import { renderHome }      from './views/home.js?v=4';
-import { renderCatalogos } from './views/catalogos.js?v=4';
-import { renderReportes }  from './views/reportes.js?v=4';
-import { renderMonitor }   from './views/monitor.js?v=4';
-import { renderCamaras }   from './views/camaras.js?v=4';
-import { renderPensiones } from './views/pensiones.js?v=5';
-import { renderParametros } from './views/parametros.js?v=1';
-import { renderEmpleados } from './views/empleados.js?v=1';
-import { renderUsuarios }  from './views/usuarios.js?v=1';
-import { renderNotFound }  from './views/notfound.js?v=4';
+import { renderLogin }     from './views/login.js?v=5';
+import { renderHome }      from './views/home.js?v=5';
+import { renderCatalogos } from './views/catalogos.js?v=5';
+import { renderReportes }  from './views/reportes.js?v=5';
+import { renderMonitor }   from './views/monitor.js?v=5';
+import { renderCamaras }   from './views/camaras.js?v=5';
+import { renderPensiones } from './views/pensiones.js?v=6';
+import { renderParametros } from './views/parametros.js?v=2';
+import { renderEmpleados } from './views/empleados.js?v=2';
+import { renderUsuarios }  from './views/usuarios.js?v=2';
+import { renderNotFound }  from './views/notfound.js?v=5';
 
 const app = document.getElementById('app');
 
