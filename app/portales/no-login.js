@@ -76,10 +76,33 @@
   // ─────────────────────────────────────────────────────────────────────────
   var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   var FIELDS_TO_STRIP = ['franja','dia_semana','mes','anio','penalizacion','plaza','fecha_op','horas_cobradas','tarifa','minutos_estancia'];
+
+  // Puente entre panel principal y portal:
+  // Si el user eligió una plaza específica en el panel (op_scope_estacionamiento_id),
+  // el portal debe operar sobre ESA plaza (no la primera de dim_plaza). Esto simula
+  // que Roberto está "logueado como admin de plaza 18": cualquier ticket que capture
+  // va tagged con esa plaza.
+  var scopeEst = localStorage.getItem('op_scope_estacionamiento_id');
+  if (scopeEst && UUID_RE.test(scopeEst)) {
+    window.__OP_SCOPE_PLAZA_ID__ = scopeEst;
+    // Cuando dim_plaza se lea (line 1480), interceptamos y forzamos ese plaza_id.
+    // Ademas seteamos window.PLAZA_ID desde ya para que el fetch shim de tickets
+    // lo use como fallback antes de que cargarParametrosPlaza corra.
+    window.PLAZA_ID = scopeEst;
+  }
+
   var origFetch = window.fetch;
 
   window.fetch = function (url, opts) {
     try {
+      // Intercepta el GET a dim_plaza: si hay scope forzado, filtramos por ese plaza_id
+      // para que cargarParametrosPlaza() lea la plaza correcta y no la primera.
+      if (typeof url === 'string' && window.__OP_SCOPE_PLAZA_ID__ &&
+          url.indexOf('/rest/v1/dim_plaza') > 0 && url.indexOf('plaza_id=eq') < 0) {
+        var sep = url.indexOf('?') >= 0 ? '&' : '?';
+        url = url + sep + 'plaza_id=eq.' + window.__OP_SCOPE_PLAZA_ID__;
+      }
+
       if (opts && typeof opts.body === 'string' && typeof url === 'string' &&
           (url.indexOf('/rest/v1/tickets') > 0 ||
            url.indexOf('/rest/v1/cortes') > 0 ||
