@@ -7,6 +7,7 @@ import { renderReportes }  from './views/reportes.js?v=4';
 import { renderMonitor }   from './views/monitor.js?v=4';
 import { renderCamaras }   from './views/camaras.js?v=4';
 import { renderPensiones } from './views/pensiones.js?v=4';
+import { renderParametros } from './views/parametros.js?v=1';
 import { renderNotFound }  from './views/notfound.js?v=4';
 
 const app = document.getElementById('app');
@@ -37,6 +38,7 @@ async function router() {
     case '/monitor':    return renderMonitor(app);
     case '/camaras':    return renderCamaras(app);
     case '/pensiones':  return renderPensiones(app);
+    case '/parametros': return renderParametros(app);
     default:            return renderNotFound(app, path);
   }
 }

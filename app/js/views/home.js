@@ -55,6 +55,7 @@ export async function renderHome(root) {
           ${modulo('#/monitor','Monitor ETL','⚙️','Salud DWH',false)}
           ${modulo('#/camaras','Cámaras LPR','📹','Streams',false)}
           ${modulo('#/pensiones','Pensiones','🎟️','Pensionados',false)}
+          ${modulo('#/parametros','Parámetros','⚙️','Tarifas y config por plaza',false)}
         </div>
       </div>
 
