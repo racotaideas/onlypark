@@ -95,14 +95,84 @@
     window.PLAZA_ID = scopeEst;
   }
 
-  // Banner de ámbito arriba del portal (muestra que "estás logueado" con ese scope)
+  // Banner de ámbito arriba del portal con SELECTOR interactivo:
+  // permite cambiar Grupo/Empresa/Estac sin salir. Al cambiar, recarga la
+  // página con los nuevos params — el portal re-carga con el nuevo contexto.
   document.addEventListener('DOMContentLoaded', function () {
-    if (!scopeEst) return;
     var banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0d2340;color:#fff;font-size:11px;padding:4px 12px;z-index:99998;text-align:center;letter-spacing:.3px;';
-    banner.innerHTML = 'Ámbito operativo: <b>' + nombre + '</b> · plaza ' + scopeEst.slice(0,8) + '… <a href="/" style="color:#3aa757;margin-left:12px;text-decoration:underline">← volver al panel</a>';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0d2340;color:#fff;font-size:11px;padding:5px 12px;z-index:99998;letter-spacing:.3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 2px 6px rgba(0,0,0,.2);';
+    banner.innerHTML = ''
+      + '<span style="opacity:.8">👤 <b>' + nombre + '</b></span>'
+      + '<span style="opacity:.5">|</span>'
+      + '<span style="opacity:.7">Ámbito:</span>'
+      + '<select id="op-scope-grp" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:3px;padding:2px 6px;font-size:11px;min-width:150px"><option value="">Todos los grupos</option></select>'
+      + '<span style="opacity:.4">›</span>'
+      + '<select id="op-scope-emp" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:3px;padding:2px 6px;font-size:11px;min-width:170px"><option value="">Todas las empresas</option></select>'
+      + '<span style="opacity:.4">›</span>'
+      + '<select id="op-scope-est" style="background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:3px;padding:2px 6px;font-size:11px;min-width:180px"><option value="">Todos los estacionamientos</option></select>'
+      + '<span style="flex:1"></span>'
+      + '<a href="/" style="color:#3aa757;text-decoration:underline">← Panel</a>';
     document.body.appendChild(banner);
-    document.body.style.paddingTop = '24px';
+    document.body.style.paddingTop = '30px';
+
+    // Cargar opciones desde Supabase REST (usando el anon key del portal)
+    var apikey = (typeof SUPABASE_KEY !== 'undefined') ? SUPABASE_KEY : window.SUPABASE_KEY;
+    var url    = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : window.SUPABASE_URL;
+    if (!apikey || !url) return;
+    var H = { apikey: apikey, Authorization: 'Bearer ' + apikey };
+
+    var selGrp = document.getElementById('op-scope-grp');
+    var selEmp = document.getElementById('op-scope-emp');
+    var selEst = document.getElementById('op-scope-est');
+
+    function opt(v,t,sel){var o=document.createElement('option');o.value=v;o.text=t;if(sel)o.selected=true;return o;}
+
+    origFetch(url+'/rest/v1/grupos_empresariales?select=grupo_id,nombre&order=nombre.asc', {headers:H})
+      .then(function(r){return r.json();}).then(function(gs){
+        gs.forEach(function(g){ selGrp.appendChild(opt(g.grupo_id, g.nombre, g.grupo_id===localStorage.getItem('op_scope_grupo_id'))); });
+        return loadEmps(localStorage.getItem('op_scope_grupo_id'), localStorage.getItem('op_scope_empresa_id'));
+      }).then(function(){ return loadEsts(localStorage.getItem('op_scope_empresa_id'), localStorage.getItem('op_scope_estacionamiento_id')); });
+
+    function loadEmps(grpId, preserve) {
+      var q = '?select=empresa_id,razon_social,grupo_id&order=razon_social.asc' + (grpId ? '&grupo_id=eq.'+grpId : '');
+      return origFetch(url+'/rest/v1/empresas'+q, {headers:H}).then(function(r){return r.json();}).then(function(es){
+        selEmp.length = 1;
+        es.forEach(function(e){ selEmp.appendChild(opt(e.empresa_id, e.razon_social, e.empresa_id===preserve)); });
+      });
+    }
+    function loadEsts(empId, preserve) {
+      if (!empId) { selEst.length = 1; return Promise.resolve(); }
+      return origFetch(url+'/rest/v1/sucursales?empresa_id=eq.'+empId+'&select=sucursal_id', {headers:H})
+        .then(function(r){return r.json();}).then(function(sucs){
+          if (!sucs.length) { selEst.length=1; return; }
+          var sIds = sucs.map(function(s){return s.sucursal_id;}).join(',');
+          return origFetch(url+'/rest/v1/estacionamientos?sucursal_id=in.('+sIds+')&select=estacionamiento_id,nombre,codigo&order=nombre.asc', {headers:H})
+            .then(function(r){return r.json();}).then(function(es){
+              selEst.length = 1;
+              es.forEach(function(e){ selEst.appendChild(opt(e.estacionamiento_id, e.nombre+' · '+e.codigo, e.estacionamiento_id===preserve)); });
+            });
+        });
+    }
+
+    function reloadWithScope() {
+      var p = new URLSearchParams();
+      if (selGrp.value) p.set('g', selGrp.value);
+      if (selEmp.value) p.set('e', selEmp.value);
+      if (selEst.value) p.set('est', selEst.value);
+      p.set('actor', nombre);
+      // Limpia localStorage para que URL params tomen precedencia
+      localStorage.removeItem('op_scope_grupo_id');
+      localStorage.removeItem('op_scope_empresa_id');
+      localStorage.removeItem('op_scope_estacionamiento_id');
+      location.href = location.pathname + '?' + p.toString();
+    }
+
+    selGrp.addEventListener('change', function(){ selEmp.value=''; selEst.value=''; loadEmps(selGrp.value, null).then(function(){ selEst.length=1; }); });
+    selEmp.addEventListener('change', function(){ selEst.value=''; loadEsts(selEmp.value, null); });
+    selEst.addEventListener('change', reloadWithScope);
+    // Al cambiar grupo/empresa sin elegir estac, tambien recarga (para filtrar por empresa)
+    selGrp.addEventListener('change', function(){ setTimeout(reloadWithScope, 300); });
+    selEmp.addEventListener('change', function(){ setTimeout(reloadWithScope, 300); });
   });
 
   var origFetch = window.fetch;

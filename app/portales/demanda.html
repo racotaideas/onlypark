@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONLYPARK · Análisis de Demanda</title>
+<style>
+:root {
+  --bg:#F5F5F7; --white:#fff; --border:#D2D2D7;
+  --purple:#0d2340; --blue:#0d2340; --green:#3aa757;
+  --gold:#F5A623; --red:#D93025; --text:#1D1D1F; --muted:#6E6E73;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+nav{background:#1D1D1F;padding:0 24px;height:52px;display:flex;align-items:center;
+    gap:12px;position:sticky;top:0;z-index:100}
+.nav-logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px}
+.nav-badge{font-size:10px;font-weight:700;background:var(--purple);color:#fff;border-radius:4px;padding:2px 8px}
+.nav-back{background:#333;color:#fff;border:none;border-radius:7px;padding:7px 14px;
+          font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px}
+.container{max-width:1300px;margin:0 auto;padding:20px 24px}
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);
+      padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:800;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.filtros{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.filtros select{border:1.5px solid var(--border);border-radius:7px;
+  padding:7px 12px;font-size:13px;background:#fff;color:var(--text)}
+.btn{background:var(--purple);color:#fff;border:none;border-radius:7px;
+     padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+.kpi{background:var(--bg);border-radius:8px;padding:14px;text-align:center}
+.kpi-val{font-size:28px;font-weight:900;line-height:1;margin-bottom:3px}
+.kpi-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+/* HEATMAP */
+.heatmap-wrap{overflow-x:auto;margin-top:8px}
+.heatmap{display:grid;grid-template-columns:64px repeat(18,1fr) 56px;gap:2px;min-width:560px}
+.hm-cell{border-radius:4px;height:30px;display:flex;align-items:center;
+          justify-content:center;font-size:9px;font-weight:700;cursor:pointer;
+          transition:transform .1s;position:relative}
+.hm-cell:hover{transform:scale(1.2);z-index:10}
+.hm-label{font-size:11px;font-weight:700;color:var(--muted);
+           display:flex;align-items:center;padding-right:8px;white-space:nowrap}
+.hm-header{font-size:9px;color:var(--muted);text-align:center;padding:4px 0}
+.legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted)}
+.leg-cell{width:20px;height:14px;border-radius:3px}
+
+/* BARRAS */
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:130px;margin-top:8px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.bar-fill{width:100%;border-radius:5px 5px 0 0;transition:height .5s ease;min-height:2px}
+.bar-label{font-size:9px;color:var(--muted);font-weight:700;text-align:center}
+.bar-val{font-size:10px;font-weight:800;color:var(--text)}
+
+/* FRANJA */
+.franja-card{border-radius:10px;padding:16px;text-align:center}
+.franja-pct{font-size:36px;font-weight:900;line-height:1;margin-bottom:6px}
+.franja-bar-bg{background:#fff;border-radius:99px;height:10px;overflow:hidden;margin:8px 0}
+.franja-bar-fill{height:100%;border-radius:99px;transition:width .6s}
+
+/* INSIGHTS */
+.insight{background:var(--bg);border-radius:8px;padding:12px 14px;
+         font-size:12px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+.insight-ico{font-size:18px;flex-shrink:0;margin-top:1px}
+
+/* TOOLTIP */
+.tooltip{position:fixed;background:#1D1D1F;color:#fff;border-radius:8px;
+         padding:8px 12px;font-size:12px;pointer-events:none;z-index:9999;
+         display:none;line-height:1.5;white-space:nowrap}
+
+/* DRILL-DOWN (popup) */
+.drill-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+             z-index:1000;align-items:center;justify-content:center;padding:20px}
+.drill-panel.open{display:flex}
+.drill-box{background:var(--white);border-radius:12px;border:2px solid var(--purple);
+           max-width:900px;width:100%;max-height:85vh;overflow-y:auto;
+           box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.drill-head{display:flex;align-items:center;gap:10px;padding:16px 20px;
+            border-bottom:1px solid var(--border);position:sticky;top:0;
+            background:var(--white);border-radius:12px 12px 0 0}
+.drill-title{font-size:15px;font-weight:900;color:var(--purple)}
+.drill-close{margin-left:auto;background:none;border:none;font-size:20px;
+             color:var(--muted);cursor:pointer;line-height:1}
+.drill-body{padding:16px 20px}
+
+/* IMPRIMIR / PDF */
+@media print {
+  nav, .toast, .drill-panel, .tooltip, button { display:none !important; }
+  body { background:#fff; }
+  .container { max-width:100%; padding:0; }
+  .card { box-shadow:none; border:1px solid #ccc; break-inside:avoid; }
+  .grid2, .grid3 { break-inside:avoid; }
+}
+</style>
+  <script src="no-login.js"></script>
+</head>
+<body>
+
+<nav id="nav-demanda">
+  <span class="nav-logo">·iwol·</span>
+  <span style="font-size:14px;font-weight:700;color:#fff">ONLYPARK</span>
+  <span class="nav-badge">DEMANDA</span>
+  <span id="app-version" style="font-size:11px;color:#888;margin-left:auto">v183</span>
+  <button onclick="window.print()" class="nav-back" style="margin-left:12px">🖨 Imprimir</button>
+  <a href="ONLYPARK_Dashboard_Corporativo.html" class="nav-back" id="link-volver" style="margin-left:8px">
+    ← Volver al dashboard
+  </a>
+</nav>
+<script>
+  // Esta página siempre se abre embebida (iframe dentro de Admin o de
+  // Corporativo, ver tab "Demanda" en ambos) — su propio encabezado negro
+  // duplicaba el del tablero que la contiene y rompía la vista organizada
+  // de las demás pestañas. Si algún día se abre suelta (window.self ===
+  // window.top) sí se muestra, por si hace falta para depurar directo.
+  if (window.self !== window.top) document.getElementById('nav-demanda').style.display = 'none';
+</script>
+
+<div class="container">
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <select id="sel-semanas" onchange="onCambioPeriodoDemanda()">
+      <option value="actual" selected>Esta semana</option>
+      <option value="semana_pasada">Semana pasada</option>
+      <option value="mes">Este mes</option>
+      <option value="custom">Personalizado</option>
+    </select>
+    <input type="date" id="demanda-desde" style="display:none" onchange="render()">
+    <input type="date" id="demanda-hasta" style="display:none" onchange="render()">
+    <select id="sel-metrica" onchange="render()">
+      <option value="autos">Número de tickets</option>
+      <option value="ingresos">Monto $</option>
+    </select>
+    <span style="margin-left:auto;font-size:12px;color:var(--muted)" id="hm-selected">
+      Clic en celda para ver detalle
+    </span>
+  </div>
+
+  <!-- HEATMAP -->
+  <div class="card">
+    <div class="card-title">🔥 Mapa de calor — Demanda por día y hora</div>
+    <div class="card-sub" id="heatmap-sub">Cada celda = promedio de autos. Oscuro = alta demanda. Clic para ver detalle.</div>
+    <div class="heatmap-wrap">
+      <div class="heatmap" id="heatmap"></div>
+    </div>
+    <div class="legend">
+      <span>Baja</span>
+      <div style="display:flex;gap:2px" id="legend-bar"></div>
+      <span>Alta</span>
+    </div>
+  </div>
+
+  <!-- SEMANAL: cajero x día — inmediatamente debajo de la matriz de calor -->
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="card-title" id="cajero-dia-titulo">👤 Ingresos por cajero y día</div>
+        <div class="card-sub" id="cajero-dia-sub">Importe cobrado por día</div>
+      </div>
+    </div>
+    <div id="tabla-cajero-dia" style="overflow-x:auto;margin-top:8px"></div>
+  </div>
+
+  <!-- KPIs RÁPIDOS -->
+  <div class="grid3" id="kpis-rapidos"></div>
+
+  <!-- SEMANAL: evolución vs LW + desglose ticket + evolución mensual -->
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">📈 Evolución por día (esta semana vs semana pasada)</div>
+      <div class="card-sub">Azul=esta semana · Dorado=semana pasada (LW)</div>
+      <div style="display:flex;gap:6px;margin-top:8px" id="evolucion-lw"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎫 Desglose Ticket — esta semana</div>
+      <div class="card-sub">Lunes a hoy</div>
+      <div id="desglose-semana" style="display:flex;flex-direction:column;gap:10px;margin-top:8px"></div>
+    </div>
+    <!-- HISTÓRICO MENSUAL: solo lectura — la captura/corrección manual vive
+         en el menú de Admin (📊 Captura histórico mensual), no aquí, ya que
+         esta vista también la ve Corporativo. -->
+    <div class="card">
+      <div class="card-title">📊 Evolución mensual</div>
+      <div class="card-sub" id="historico-sub">Cargando…</div>
+      <div id="tabla-historico-mensual" style="overflow-x:auto;margin-top:8px"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="drill-panel" id="drill-panel" onclick="if(event.target===this) cerrarDrillCajero()">
+  <div class="drill-box">
+    <div class="drill-head">
+      <span class="drill-title" id="drill-title">Detalle</span>
+      <button class="drill-close" onclick="cerrarDrillCajero()">✕</button>
+    </div>
+    <div class="drill-body" id="drill-content"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ixumzgorhuhftasgrmhg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4dW16Z29yaHVoZnRhc2dybWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NjY2NDQsImV4cCI6MjEwMTA0MjY0NH0.Zmz8nqDqanNdjLN5UrG0zPlc6THDWHeZkddS7ztO1GA';
+const SB_HEADERS = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY };
+
+const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const HORAS = Array.from({length:24},(_,i)=>i);
+// Solo para el mapa de calor: fuera de 5:00–22:00 la plaza no opera, esas
+// columnas no aportan información y solo restan espacio útil a la gráfica.
+const HORAS_HEATMAP = Array.from({length:18},(_,i)=>i+5);
+let METRICA = 'autos';
+let DEMANDA = {};
+let TICKETS_RAW = [];
+
+function fmtVal(v) {
+  return METRICA==='ingresos' ? ('$'+Math.round(v).toLocaleString('es-MX')) : (Math.round(v)+' autos');
+}
+
+// Franja horaria: 3 bloques (05:00–22:00) — fuera de ese rango no hay
+// franja asignada (la plaza no opera de madrugada).
+const FRANJAS_DEM = [
+  { label:'05:00–10:00', color:'#0d2340', bg:'#EFF6FF', horas:[5,6,7,8,9], test:h=>h>=5&&h<10 },
+  { label:'10:00–17:00', color:'#0d2340', bg:'#F3F0FF', horas:[10,11,12,13,14,15,16], test:h=>h>=10&&h<17 },
+  { label:'17:00–22:00', color:'#F5A623', bg:'#FFFBEB', horas:[17,18,19,20,21], test:h=>h>=17&&h<22 }
+];
+const FRANJA_DEM_SIN = { label:'Sin franja', color:'#888', bg:'#F5F5F7', horas:[] };
+function franjaDeHoraDem(h) {
+  return FRANJAS_DEM.find(f => f.test(h)) || FRANJA_DEM_SIN;
+}
+function fechaADiaIdx(fechaStr) {
+  const d = new Date(fechaStr+'T12:00:00');
+  return d.getDay()===0 ? 6 : d.getDay()-1; // Lun=0 .. Dom=6, igual que DIAS
+}
+
+// Supabase/PostgREST limita cada respuesta a 1000 filas sin importar el
+// &limit= que se pida; para rangos con más de 1000 tickets hay que paginar
+// con &offset= hasta agotar el rango o llegar a maxTotal.
+async function fetchPaginado(urlBase, headers, maxTotal) {
+  let todas = [];
+  let offset = 0;
+  const pageSize = 1000;
+  while (true) {
+    const sep = urlBase.includes('?') ? '&' : '?';
+    const r = await fetch(`${urlBase}${sep}limit=${pageSize}&offset=${offset}`, { headers });
+    if (!r.ok) break;
+    const pagina = await r.json();
+    todas = todas.concat(pagina);
+    if (pagina.length < pageSize || todas.length >= maxTotal) break;
+    offset += pageSize;
+  }
+  return todas;
+}
+
+// Simplificado a 3 opciones (antes "Últimas N semanas/trimestre", relativo y
+// poco intuitivo): Esta semana / Este mes / Personalizado, mismo estilo que
+// ya se usa en Admin (Histórico) y en Movimientos.
+// Fecha local (no UTC, definida más abajo como fmtFechaLocal) — toISOString()
+// convierte a UTC y en la noche (México, UTC-6) "hoy" se recorría al día siguiente.
+function onCambioPeriodoDemanda() {
+  const esCustom = document.getElementById('sel-semanas').value === 'custom';
+  const dDesde = document.getElementById('demanda-desde'), dHasta = document.getElementById('demanda-hasta');
+  dDesde.style.display = esCustom ? '' : 'none';
+  dHasta.style.display = esCustom ? '' : 'none';
+  if (esCustom) {
+    const hoy = new Date();
+    if (!dDesde.value) dDesde.value = fmtFechaLocal(lunesDeSemana(hoy));
+    if (!dHasta.value) dHasta.value = fmtFechaLocal(hoy);
+  } else {
+    render();
+  }
+}
+async function cargarTicketsDemanda(periodo) {
+  const hoy = new Date();
+  let desde, hasta;
+  if (periodo === 'mes') { desde = fmtFechaLocal(new Date(hoy.getFullYear(), hoy.getMonth(), 1)); hasta = fmtFechaLocal(hoy); }
+  else if (periodo === 'semana_pasada') {
+    // Lunes a domingo de la semana ANTERIOR (no incluye hoy).
+    const iniEstaSemana = lunesDeSemana(hoy);
+    const iniPasada = new Date(iniEstaSemana); iniPasada.setDate(iniEstaSemana.getDate() - 7);
+    const finPasada = new Date(iniEstaSemana); finPasada.setDate(iniEstaSemana.getDate() - 1);
+    desde = fmtFechaLocal(iniPasada); hasta = fmtFechaLocal(finPasada);
+  }
+  else if (periodo === 'custom') {
+    desde = document.getElementById('demanda-desde').value || fmtFechaLocal(lunesDeSemana(hoy));
+    hasta = document.getElementById('demanda-hasta').value || fmtFechaLocal(hoy);
+  } else { desde = fmtFechaLocal(lunesDeSemana(hoy)); hasta = fmtFechaLocal(hoy); }
+  try {
+    // folio/tipo/cajero/hora_salida/estatus se agregan además de
+    // fecha_op/hora_entrada/importe (lo único que usa el heatmap para
+    // calcular) para poder mostrar el detalle real al hacer clic en una
+    // celda, sin tener que pedirlo aparte.
+    const base = `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${desde}&fecha_op=lte.${hasta}&select=folio,fecha_op,hora_entrada,hora_salida,tipo,cajero,importe,estatus&order=fecha_op.asc`;
+    const rows = await fetchPaginado(base, SB_HEADERS, 15000);
+    // Mismo filtro que ya usan "Tickets por cajero y día" y el resumen
+    // semanal (cargarSemanaActualYAnterior): sin esto, el heatmap contaba
+    // también boletos abiertos/cancelados y sus totales no cuadraban con
+    // los de esas otras tablas que sí los excluyen (bug real reportado).
+    return rows.filter(t => t.estatus!=='abierto' && t.estatus!=='cancelado');
+  } catch (e) { return []; }
+}
+
+// ══ SEMANAL: evolución vs LW, desglose ticket, cajero×día (Fase H) ══
+function fmtFechaLocal(d) {
+  const p2=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+}
+function lunesDeSemana(d) {
+  const dd = new Date(d);
+  dd.setDate(dd.getDate() - ((dd.getDay()+6)%7)); // Lun=inicio de semana
+  dd.setHours(0,0,0,0);
+  return dd;
+}
+function fmtMoney(n) { return '$'+Math.round(n||0).toLocaleString('es-MX'); }
+
+// Normaliza el nombre del cajero para agrupar ("HUMBERTO"/"Humberto"/"humberto"
+// deben ser la misma fila) — el campo tickets.cajero es texto libre y se ha
+// guardado con capitalización inconsistente entre sesiones/cajeros.
+function normCajero(n) {
+  const s = (n||'Sin cajero').trim().replace(/\s+/g,' ');
+  if (!s) return 'Sin cajero';
+  return s.replace(/\p{L}+/gu, w => w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+}
+
+// Desglose Ticket (mismos 5 buckets que el tablero de Admin): "Cortesía" se
+// deriva de importe=0 en normal/preferencial (tolerancia ≤15min), no del
+// campo tipo — ver Fase G para el detalle de por qué.
+const DESGLOSE_DEM = {
+  pagado:       { label:'Normal',             color:'#0d2340', filter:o=>o.tipo==='normal' && Number(o.importe)>0 },
+  preferencial: { label:'Preferente',        color:'#0d2340', filter:o=>o.tipo==='preferencial' && Number(o.importe)>0 },
+  cortesia:     { label:'Cortesía (≤15min)', color:'#888',    filter:o=>(o.tipo==='normal'||o.tipo==='preferencial') && Number(o.importe)===0 },
+  pension:      { label:'Pensión',           color:'#3aa757', filter:o=>o.tipo==='pension' },
+  empleado:     { label:'Empleado',          color:'#0d2340', filter:o=>o.tipo==='empleado' }
+};
+
+// Trae tickets cerrados de esta semana + la semana pasada (lunes a domingo),
+// con los campos extra (tipo/cajero/estatus) que no necesita el heatmap.
+async function cargarSemanaActualYAnterior() {
+  const hoy = new Date();
+  const lunesActual = lunesDeSemana(hoy);
+  const lunesPasado = new Date(lunesActual); lunesPasado.setDate(lunesPasado.getDate()-7);
+  const desde = fmtFechaLocal(lunesPasado), hasta = fmtFechaLocal(hoy);
+  try {
+    const base = `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${desde}&fecha_op=lte.${hasta}&select=folio,fecha_op,hora_entrada,hora_salida,tipo,cajero,importe,estatus&order=fecha_op.asc`;
+    const rows = await fetchPaginado(base, SB_HEADERS, 8000);
+    const cerrados = rows.filter(t => t.estatus!=='abierto' && t.estatus!=='cancelado');
+    return { cerrados, lunesActualStr: fmtFechaLocal(lunesActual), lunesPasadoStr: fmtFechaLocal(lunesPasado) };
+  } catch (e) { return { cerrados: [], lunesActualStr: fmtFechaLocal(lunesActual), lunesPasadoStr: fmtFechaLocal(lunesPasado) }; }
+}
+
+// Agrupa tickets en 7 cubetas (Lun..Dom) a partir del lunes dado.
+function agruparPorDiaSemana(rows, lunesStr) {
+  const lunes = new Date(lunesStr+'T12:00:00');
+  const out = DIAS.map(()=>({tickets:0,importe:0}));
+  rows.forEach(t => {
+    const fd = new Date(t.fecha_op+'T12:00:00');
+    const idx = Math.round((fd-lunes)/86400000);
+    if (idx>=0 && idx<7) { out[idx].tickets++; out[idx].importe += Number(t.importe)||0; }
+  });
+  return out;
+}
+
+function renderEvolucionLW(cerrados, lunesActualStr, lunesPasadoStr) {
+  const actual = agruparPorDiaSemana(cerrados.filter(t=>t.fecha_op>=lunesActualStr), lunesActualStr);
+  const pasada = agruparPorDiaSemana(cerrados.filter(t=>t.fecha_op>=lunesPasadoStr && t.fecha_op<lunesActualStr), lunesPasadoStr);
+  const val = d => METRICA==='ingresos' ? d.importe : d.tickets;
+  const fmt = v => METRICA==='ingresos' ? fmtMoney(v) : Math.round(v);
+  const max = Math.max(...actual.map(val), ...pasada.map(val), 1);
+  const H = 100;
+  document.getElementById('evolucion-lw').innerHTML = DIAS.map((dia,i) => {
+    const hA = Math.round(val(actual[i])/max*H), hP = Math.round(val(pasada[i])/max*H);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div style="display:flex;gap:3px;align-items:flex-end;height:${H}px"
+           onmouseenter="tt(event,'${dia} · esta semana: ${fmt(val(actual[i]))} · LW: ${fmt(val(pasada[i]))}')"
+           onmouseleave="ht()">
+        <div style="width:14px;border-radius:4px 4px 0 0;background:#0d2340;height:${hA}px;min-height:2px"></div>
+        <div style="width:14px;border-radius:4px 4px 0 0;background:#F5A623;height:${hP}px;min-height:2px"></div>
+      </div>
+      <div style="font-size:9px;color:var(--muted);font-weight:700">${dia}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDesgloseSemana(ticketsSemana) {
+  const totalOps = ticketsSemana.length || 1;
+  const totalIng = ticketsSemana.reduce((s,o)=>s+(Number(o.importe)||0),0) || 1;
+  document.getElementById('desglose-semana').innerHTML = Object.values(DESGLOSE_DEM).map(b => {
+    const subset = ticketsSemana.filter(b.filter);
+    const cnt = subset.length;
+    const ing = subset.reduce((s,o)=>s+(Number(o.importe)||0),0);
+    // El % de la barra y el orden de las cifras siguen el combo Tickets/Monto.
+    const pct = METRICA==='ingresos' ? Math.round(ing/totalIng*100) : Math.round(cnt/totalOps*100);
+    const cifras = METRICA==='ingresos' ? `${fmtMoney(ing)} · ${cnt} ops` : `${cnt} ops · ${fmtMoney(ing)}`;
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="font-weight:700;color:${b.color}">${b.label}</span>
+        <span style="color:var(--muted)">${cifras}</span>
+        <span style="font-weight:700">${pct}%</span>
+      </div>
+      <div style="background:#eaeef4;border-radius:99px;height:10px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;border-radius:99px;background:${b.color}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Filas crudas de la semana (para el drill-down) + el lunes de referencia,
+// cacheados para no volver a pedirlos a Supabase en cada clic.
+let CAJERO_DIA_DEM_ROWS = [];
+let CAJERO_DIA_DEM_LUNES = null;
+
+const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+// Antes tenía su propio combo de semana (independiente del selector de
+// período de arriba) — se quitó para no tener dos controles de "universo"
+// distintos en la misma pestaña: ahora esta tabla simplemente sigue a la
+// semana actual, igual que su vecino "Desglose Ticket — esta semana".
+async function cargarYRenderCajeroDia(lunesStr) {
+  const lunes = new Date(lunesStr+'T12:00:00');
+  const domingo = new Date(lunes); domingo.setDate(domingo.getDate()+6);
+  const hastaStr = fmtFechaLocal(domingo);
+  const rango = lunes.getMonth() === domingo.getMonth()
+    ? `${lunes.getDate()} al ${domingo.getDate()} ${MESES_CORTOS[domingo.getMonth()]}`
+    : `${lunes.getDate()} ${MESES_CORTOS[lunes.getMonth()]} al ${domingo.getDate()} ${MESES_CORTOS[domingo.getMonth()]}`;
+  const esSemanaPasada = fmtFechaLocal(lunes) !== fmtFechaLocal(lunesDeSemana(new Date()));
+  const rangoTxt = `${esSemanaPasada ? 'Semana pasada' : 'Esta semana'} (${rango})`;
+  const parteMetrica = METRICA==='ingresos' ? 'importe cobrado por día' : 'tickets por día';
+  document.getElementById('cajero-dia-titulo').textContent = METRICA==='ingresos' ? '👤 Ingresos por cajero y día' : '👤 Tickets por cajero y día';
+  document.getElementById('cajero-dia-sub').textContent = `${rangoTxt} · ${parteMetrica}`;
+  try {
+    const base = `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${lunesStr}&fecha_op=lte.${hastaStr}&select=folio,fecha_op,hora_entrada,hora_salida,tipo,cajero,importe,estatus&order=fecha_op.asc`;
+    const rows = await fetchPaginado(base, SB_HEADERS, 8000);
+    const cerrados = rows.filter(t => t.estatus!=='abierto' && t.estatus!=='cancelado');
+    renderTablaCajeroDia(cerrados, lunesStr);
+  } catch (e) {
+    document.getElementById('tabla-cajero-dia').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">No se pudo cargar</div>';
+  }
+}
+
+function renderTablaCajeroDia(ticketsSemana, lunesActualStr) {
+  const lunes = new Date(lunesActualStr+'T12:00:00');
+  CAJERO_DIA_DEM_ROWS = ticketsSemana;
+  CAJERO_DIA_DEM_LUNES = lunes;
+  // El combo Tickets/Monto también aplica aquí: en modo tickets se cuenta 1
+  // por operación, en modo monto se suma el importe — mismo criterio que el
+  // resto del tablero.
+  const fmtCelda = v => METRICA==='ingresos' ? fmtMoney(v) : String(Math.round(v));
+  const porCajero = {};
+  ticketsSemana.forEach(t => {
+    const cj = normCajero(t.cajero);
+    if (!porCajero[cj]) porCajero[cj] = [0,0,0,0,0,0,0];
+    const fd = new Date(t.fecha_op+'T12:00:00');
+    const idx = Math.round((fd-lunes)/86400000);
+    if (idx>=0 && idx<7) porCajero[cj][idx] += METRICA==='ingresos' ? (Number(t.importe)||0) : 1;
+  });
+  const filas = Object.entries(porCajero).sort((a,b) =>
+    b[1].reduce((s,v)=>s+v,0) - a[1].reduce((s,v)=>s+v,0));
+  const el = document.getElementById('tabla-cajero-dia');
+  if (!filas.length) {
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Sin operaciones en esa semana</div>';
+    return;
+  }
+  const totalesDia = [0,0,0,0,0,0,0];
+  filas.forEach(([,vals]) => vals.forEach((v,i)=>totalesDia[i]+=v));
+  const granTotal = totalesDia.reduce((s,v)=>s+v,0);
+  el.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;font-variant-numeric:tabular-nums">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:7px">Cajero</th>
+        ${DIAS.map(d=>`<th style="padding:7px;text-align:right">${d}</th>`).join('')}
+        <th style="padding:7px;text-align:right">Suma días</th>
+      </tr></thead>
+      <tbody>
+      ${filas.map(([cj,vals]) => {
+        const total = vals.reduce((s,v)=>s+v,0);
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:7px;font-weight:700">${cj}</td>
+          ${vals.map((v,i)=>`<td style="padding:7px;text-align:right;color:${v?'var(--text)':'var(--muted)'}${v?';cursor:pointer':''}"${v?` onclick="drillCajeroDiaDem('${cj.replace(/'/g,"\\'")}',${i})"`:''}>${v?fmtCelda(v):'—'}</td>`).join('')}
+          <td style="padding:7px;text-align:right;font-weight:800;color:var(--purple);cursor:pointer" onclick="drillCajeroDiaDem('${cj.replace(/'/g,"\\'")}',null)">${fmtCelda(total)}</td>
+        </tr>`;
+      }).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="border-top:2px solid var(--border)">
+          <td style="padding:7px;font-weight:800">Total</td>
+          ${totalesDia.map((v,i)=>`<td style="padding:7px;text-align:right;font-weight:800;color:${v?'var(--text)':'var(--muted)'}${v?';cursor:pointer':''}"${v?` onclick="drillCajeroDiaDem(null,${i})"`:''}>${v?fmtCelda(v):'—'}</td>`).join('')}
+          <td style="padding:7px;text-align:right;font-weight:900;color:var(--purple);cursor:pointer" onclick="drillCajeroDiaDem(null,null)">${fmtCelda(granTotal)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+// Drill-down de "Ingresos por cajero y día": cajero=null -> todos los cajeros
+// de ese día; dia=null -> todos los días de ese cajero; ambos null -> toda
+// la semana.
+function drillCajeroDiaDem(cajero, dia) {
+  if (!CAJERO_DIA_DEM_LUNES) return;
+  const ops = CAJERO_DIA_DEM_ROWS.filter(t => {
+    if (cajero != null && normCajero(t.cajero) !== cajero) return false;
+    if (dia != null) {
+      const fd = new Date(t.fecha_op+'T12:00:00');
+      const idx = Math.round((fd-CAJERO_DIA_DEM_LUNES)/86400000);
+      if (idx !== dia) return false;
+    }
+    return true;
+  });
+  const parteDia = dia!=null ? DIAS[dia] : 'esta semana';
+  const parteCajero = cajero!=null ? cajero : 'Todos los cajeros';
+  document.getElementById('drill-title').textContent = '👤 '+parteCajero+' · '+parteDia;
+  document.getElementById('drill-content').innerHTML = ops.length ? `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:7px">Folio</th><th style="text-align:left;padding:7px">Tipo</th>
+        <th style="text-align:left;padding:7px">Cajero</th><th style="text-align:left;padding:7px">Fecha</th>
+        <th style="text-align:left;padding:7px">Entrada</th><th style="text-align:left;padding:7px">Salida</th>
+        <th style="padding:7px;text-align:right">Importe</th>
+      </tr></thead>
+      <tbody>${ops.map(o=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:7px"><span style="font-family:monospace;font-weight:700">${o.folio||'—'}</span></td>
+        <td style="padding:7px">${o.tipo}</td><td style="padding:7px">${normCajero(o.cajero)}</td>
+        <td style="padding:7px">${o.fecha_op}</td><td style="padding:7px">${o.hora_entrada||'—'}</td>
+        <td style="padding:7px">${o.hora_salida||'—'}</td>
+        <td style="padding:7px;text-align:right;font-weight:700;color:${o.importe?'var(--gold)':'var(--muted)'}">${fmtMoney(o.importe)}</td>
+      </tr>`).join('')}</tbody></table></div>` : '<div style="padding:20px;color:var(--muted)">Sin operaciones</div>';
+  document.getElementById('drill-panel').classList.add('open');
+}
+function cerrarDrillCajero() {
+  document.getElementById('drill-panel').classList.remove('open');
+}
+
+async function renderSemanaWidgets() {
+  const { cerrados, lunesActualStr, lunesPasadoStr } = await cargarSemanaActualYAnterior();
+  renderEvolucionLW(cerrados, lunesActualStr, lunesPasadoStr);
+  const ticketsSemana = cerrados.filter(t => t.fecha_op >= lunesActualStr);
+  renderDesgloseSemana(ticketsSemana);
+  // "Tickets por cajero y día" solo tiene sentido para un rango de una
+  // semana (Cajero × Lun..Dom) — para "Esta semana"/"Semana pasada" del
+  // selector de arriba sí lo sigue; para "Este mes"/"Personalizado" (que
+  // pueden abarcar varias semanas) se queda en la semana actual, que es lo
+  // único que cabe en esta tabla.
+  const periodoSel = document.getElementById('sel-semanas').value;
+  const lunesParaCajeroDia = periodoSel === 'semana_pasada' ? lunesPasadoStr : lunesActualStr;
+  cargarYRenderCajeroDia(lunesParaCajeroDia);
+}
+
+// Construye {dia:{hora:valor}} — 'autos' = promedio de entradas por hora en ese
+// día de la semana; 'ingresos' = promedio de importe cobrado en esa celda.
+function construirDemanda(tickets, metrica) {
+  const data = {}, fechasPorDia = {};
+  DIAS.forEach(d => { data[d]={}; HORAS.forEach(h=>data[d][h]=0); fechasPorDia[d]=new Set(); });
+  tickets.forEach(t => {
+    if (!t.fecha_op || !t.hora_entrada) return;
+    const dia = DIAS[fechaADiaIdx(t.fecha_op)];
+    const h = parseInt(String(t.hora_entrada).split(':')[0]);
+    if (isNaN(h)) return;
+    fechasPorDia[dia].add(t.fecha_op);
+    data[dia][h] += metrica==='ingresos' ? (Number(t.importe)||0) : 1;
+  });
+  DIAS.forEach(dia => {
+    const n = fechasPorDia[dia].size || 1;
+    HORAS.forEach(h => { data[dia][h] = data[dia][h] / n; });
+  });
+  return data;
+}
+
+function heatColor(val,max) {
+  const p=val/max;
+  if(p<0.15) return {bg:'#F3F0FF',text:'#9B8EC4'};
+  if(p<0.35) return {bg:'#C7B8E8',text:'#3C3489'};
+  if(p<0.55) return {bg:'#9B7FD4',text:'#fff'};
+  if(p<0.75) return {bg:'#0d2340',text:'#fff'};
+  return {bg:'#4B2D7F',text:'#fff'};
+}
+
+async function render() {
+  const periodo = document.getElementById('sel-semanas').value;
+  METRICA = document.getElementById('sel-metrica').value || 'autos';
+  const tickets = await cargarTicketsDemanda(periodo);
+  TICKETS_RAW = tickets;
+  DEMANDA = construirDemanda(tickets, METRICA);
+
+  renderKPIs();
+  renderHeatmap();
+  renderSemanaWidgets();
+  cargarHistoricoMensual();
+}
+
+// ══ EVOLUCIÓN MENSUAL (historico_mensual) — SOLO LECTURA ══
+// La captura/corrección manual vive en el menú de Admin (📊 Captura
+// histórico mensual), no aquí — esta vista también la ve Corporativo.
+// Combina 3 fuentes por mes: (1) años previos al sistema, capturados a mano
+// (origen='manual', nunca se sobreescriben); (2) meses ya cerrados,
+// calculados una vez desde 'tickets' y guardados (origen='sistema'); (3) el
+// mes en curso, que SIEMPRE se recalcula en vivo.
+const MESES_NOMBRE = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let PLAZA_ID_DEM = null;
+async function obtenerPlazaIdDem() {
+  if (PLAZA_ID_DEM) return PLAZA_ID_DEM;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=plaza_id&limit=1`, { headers: SB_HEADERS });
+    const rows = r.ok ? await r.json() : [];
+    PLAZA_ID_DEM = rows[0] ? rows[0].plaza_id : null;
+  } catch (e) { PLAZA_ID_DEM = null; }
+  return PLAZA_ID_DEM;
+}
+async function calcularMesDesdeTickets(anio, mes) {
+  const desde = `${anio}-${String(mes).padStart(2,'0')}-01`;
+  const ultimoDia = new Date(anio, mes, 0).getDate();
+  const hasta = `${anio}-${String(mes).padStart(2,'0')}-${String(ultimoDia).padStart(2,'0')}`;
+  const base = `${SUPABASE_URL}/rest/v1/tickets?fecha_op=gte.${desde}&fecha_op=lte.${hasta}&select=importe,estatus`;
+  const rows = await fetchPaginado(base, SB_HEADERS, 20000);
+  const validos = rows.filter(t => t.estatus !== 'cancelado');
+  const monto = validos.reduce((s,t) => s + (Number(t.importe)||0), 0);
+  return { monto, tickets: validos.length };
+}
+async function cargarHistoricoMensual() {
+  const cont = document.getElementById('tabla-historico-mensual');
+  const sub = document.getElementById('historico-sub');
+  const plazaId = await obtenerPlazaIdDem();
+  if (!plazaId) { sub.textContent = 'No se pudo determinar la plaza'; return; }
+
+  const hoy = new Date();
+  const anioActual = hoy.getFullYear(), mesActual = hoy.getMonth()+1;
+  const anioAnterior = anioActual - 1;
+  sub.textContent = `${anioAnterior} vs ${anioActual} · importe cobrado por mes`;
+
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/historico_mensual?plaza_id=eq.${plazaId}&anio=in.(${anioAnterior},${anioActual})&select=anio,mes,monto_total,origen`, { headers: SB_HEADERS });
+    const filas = r.ok ? await r.json() : [];
+    const mapa = {}; // mapa[anio][mes] = {monto, origen}
+    filas.forEach(f => { (mapa[f.anio] = mapa[f.anio]||{})[f.mes] = { monto: Number(f.monto_total)||0, origen: f.origen }; });
+
+    const porGuardar = [];
+    for (const anio of [anioAnterior, anioActual]) {
+      const tope = anio === anioActual ? mesActual : 12;
+      for (let mes = 1; mes <= tope; mes++) {
+        const existente = mapa[anio] && mapa[anio][mes];
+        const esMesActual = anio === anioActual && mes === mesActual;
+        if (existente && !esMesActual) continue; // ya guardado (manual o sistema) y cerrado
+        const { monto, tickets } = await calcularMesDesdeTickets(anio, mes);
+        // Si el sistema no tiene NINGÚN ticket ese mes (y no es el mes en
+        // curso), NO se guarda ni se muestra $0 — $0 diría "hubo cero
+        // ingresos" cuando la realidad es "no tenemos ese dato" (el sistema
+        // solo tiene historial de las últimas semanas). Se deja en "—".
+        if (tickets > 0 || esMesActual) {
+          (mapa[anio] = mapa[anio]||{})[mes] = { monto, origen: 'sistema' };
+          porGuardar.push({ plaza_id: plazaId, anio, mes, monto_total: monto, tickets_totales: tickets, origen: 'sistema', actualizado_en: new Date().toISOString() });
+        }
+      }
+    }
+    if (porGuardar.length) {
+      fetch(`${SUPABASE_URL}/rest/v1/historico_mensual?on_conflict=plaza_id,anio,mes`, {
+        method: 'POST',
+        headers: { ...SB_HEADERS, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(porGuardar)
+      }).catch(()=>{});
+    }
+
+    renderHistoricoMensual(mapa, anioAnterior, anioActual, mesActual);
+  } catch (e) {
+    cont.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">No se pudo cargar el histórico</div>';
+  }
+}
+function renderHistoricoMensual(mapa, anioAnterior, anioActual, mesActual) {
+  const val = (anio, mes) => (mapa[anio] && mapa[anio][mes]) ? mapa[anio][mes].monto : 0;
+  const filas = MESES_NOMBRE.map((nombre, i) => {
+    const mes = i+1;
+    const anterior = mapa[anioAnterior] && mapa[anioAnterior][mes] ? val(anioAnterior, mes) : null;
+    const actual = mapa[anioActual] && mapa[anioActual][mes] ? val(anioActual, mes) : null;
+    return { mes, nombre, anterior, actual };
+  });
+  const totalAnterior = filas.reduce((s,f)=>s+(f.anterior||0), 0);
+  const totalActual = filas.reduce((s,f)=>s+(f.actual||0), 0);
+  const varPct = (actual, anterior) => {
+    if (actual == null || anterior == null) return null;
+    if (!anterior) return null;
+    return (actual - anterior) / anterior * 100;
+  };
+  const fmtVar = v => v == null ? '—' : `${v>0?'+':''}${v.toFixed(1)}%`;
+  const colorVar = v => v == null ? 'var(--muted)' : (v >= 0 ? 'var(--green)' : 'var(--red)');
+  const filaHtml = (label, anterior, actual, vPct, esTotal, destacar) => `
+    <tr style="${esTotal?'border-top:2px solid var(--border);font-weight:900':'border-bottom:1px solid var(--border)'}${destacar?';background:#F3F0FF':''}">
+      <td style="padding:7px">${label}</td>
+      <td style="padding:7px;text-align:right">${anterior==null?'—':fmtMoney(anterior)}</td>
+      <td style="padding:7px;text-align:right">${actual==null?'—':fmtMoney(actual)}</td>
+      <td style="padding:7px;text-align:right;font-weight:800;color:${colorVar(vPct)}">${fmtVar(vPct)}</td>
+    </tr>`;
+  const cuerpo = filas.map(f => filaHtml(
+    f.nombre + (f.mes===mesActual ? ' (en curso)' : ''),
+    f.anterior, f.actual, varPct(f.actual, f.anterior), false, f.mes===mesActual
+  )).join('');
+  const totalRow = filaHtml('Total general', totalAnterior||null, totalActual||null, varPct(totalActual, totalAnterior), true, false);
+  document.getElementById('tabla-historico-mensual').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:7px">Mes</th>
+        <th style="text-align:right;padding:7px">${anioAnterior}</th>
+        <th style="text-align:right;padding:7px">${anioActual}</th>
+        <th style="text-align:right;padding:7px">Var %</th>
+      </tr></thead>
+      <tbody>${cuerpo}${totalRow}</tbody>
+    </table>`;
+}
+
+function renderKPIs() {
+  let maxVal=0,maxH=0,maxD='';
+  DIAS.forEach(d=>HORAS.forEach(h=>{if(DEMANDA[d][h]>maxVal){maxVal=DEMANDA[d][h];maxH=h;maxD=d;}}));
+  const porDia=DIAS.map(d=>({d,t:HORAS.reduce((s,h)=>s+DEMANDA[d][h],0)})).sort((a,b)=>b.t-a.t)[0];
+  // En modo Monto, "Autos promedio/Ocupación" no tiene equivalente en dinero
+  // (no existe "ocupación en pesos"), así que se sustituye por Ticket
+  // promedio = total cobrado / total de operaciones, sobre los tickets
+  // crudos del período (no sobre el promedio por hora de DEMANDA).
+  let tarjeta2;
+  if (METRICA==='ingresos') {
+    const totalImporte = TICKETS_RAW.reduce((s,t)=>s+(Number(t.importe)||0),0);
+    const totalOps = TICKETS_RAW.length || 1;
+    tarjeta2 = {label:'Ticket promedio', val:fmtMoney(totalImporte/totalOps), sub:`sobre ${TICKETS_RAW.length} operaciones`, color:'var(--purple)'};
+  } else {
+    let sum=0,cnt=0;
+    DIAS.forEach(d=>HORAS.forEach(h=>{sum+=DEMANDA[d][h];cnt++;}));
+    const prom=sum/cnt;
+    tarjeta2 = {label:'Ocupación promedio', val:fmtVal(prom), sub:`${Math.round(prom/40*100)}% de capacidad`, color:'var(--purple)'};
+  }
+  document.getElementById('kpis-rapidos').innerHTML=[
+    {label:'Hora pico',val:`${maxH}:00`,sub:`${maxD} · ${fmtVal(maxVal)}`,color:'var(--red)'},
+    tarjeta2,
+    {label:'Día más activo',val:porDia.d,sub:`Prom. ${fmtVal(porDia.t/24)}/hora`,color:'var(--blue)'},
+  ].map(k=>`<div class="card kpi" style="text-align:center;padding:16px">
+    <div class="kpi-val" style="color:${k.color}">${k.val}</div>
+    <div class="kpi-label">${k.label}</div>
+    <div style="font-size:10px;color:var(--muted);margin-top:3px">${k.sub}</div>
+  </div>`).join('');
+}
+
+function renderHeatmap() {
+  // Escala de color propia (no la del resto de gráficas): solo mira las
+  // horas visibles, si no una hora de madrugada casi en cero jala el máximo
+  // hacia abajo y todo se ve más oscuro de lo que debería.
+  let max=0;
+  DIAS.forEach(d=>HORAS_HEATMAP.forEach(h=>{if(DEMANDA[d][h]>max)max=DEMANDA[d][h];}));
+  const el=document.getElementById('heatmap');
+  document.getElementById('heatmap-sub').textContent = METRICA==='ingresos'
+    ? 'Cada celda = promedio de $ cobrado. Oscuro = mayor monto. Clic para ver detalle.'
+    : 'Cada celda = promedio de autos. Oscuro = alta demanda. Clic para ver detalle.';
+  // Totales: suma de los promedios mostrados en la cuadrícula, por fila
+  // (día) y por columna (hora), más el gran total en la esquina — mismo
+  // criterio en ambos sentidos para que fila y columna cuadren entre sí.
+  const totalFila = dia => HORAS_HEATMAP.reduce((s,h)=>s+DEMANDA[dia][h],0);
+  const totalColumna = h => DIAS.reduce((s,dia)=>s+DEMANDA[dia][h],0);
+  const granTotal = DIAS.reduce((s,dia)=>s+totalFila(dia),0);
+  const totalCellStyle = 'font-weight:800;background:#eaeef4;color:#4B2D7F';
+
+  let html='<div class="hm-cell"></div>';
+  HORAS_HEATMAP.forEach(h=>{html+=`<div class="hm-header">${h}</div>`;});
+  html+=`<div class="hm-header" style="font-weight:800">Total</div>`;
+  DIAS.forEach(dia=>{
+    html+=`<div class="hm-label">${dia}</div>`;
+    HORAS_HEATMAP.forEach(h=>{
+      const val=DEMANDA[dia][h];
+      const {bg,text}=heatColor(val,max);
+      const fr=franjaDeHoraDem(h).label;
+      const fmtVal_str=fmtVal(val);
+      html+=`<div class="hm-cell" style="background:${bg};color:${text}" data-dia="${dia}" data-hora="${h}"
+        onmouseenter="tt(event,'${dia} ${h}:00 — ${fmtVal_str} (${fr})')"
+        onmouseleave="ht()">${Math.round(val)>0?Math.round(val):''}</div>`;
+    });
+    html+=`<div class="hm-cell" style="${totalCellStyle}"
+      onmouseenter="tt(event,'${dia} · total ${fmtVal(totalFila(dia))}')" onmouseleave="ht()">${Math.round(totalFila(dia))}</div>`;
+  });
+  html+=`<div class="hm-label" style="font-weight:800">Total</div>`;
+  HORAS_HEATMAP.forEach(h=>{
+    html+=`<div class="hm-cell" style="${totalCellStyle}"
+      onmouseenter="tt(event,'${h}:00 · total ${fmtVal(totalColumna(h))}')" onmouseleave="ht()">${Math.round(totalColumna(h))}</div>`;
+  });
+  html+=`<div class="hm-cell" style="${totalCellStyle}"
+    onmouseenter="tt(event,'Total general: ${fmtVal(granTotal)}')" onmouseleave="ht()">${Math.round(granTotal)}</div>`;
+  el.innerHTML=html;
+  // Event listener para clic en celdas del heatmap
+  document.querySelectorAll('.heatmap .hm-cell[data-dia]').forEach(cell => {
+    cell.addEventListener('click', function() {
+      const dia = this.getAttribute('data-dia');
+      const hora = parseInt(this.getAttribute('data-hora'));
+      if (dia && !isNaN(hora)) {
+        const val = DEMANDA[dia][hora];
+        const fr = franjaDeHoraDem(hora).label;
+        document.getElementById('hm-selected').textContent = dia + ' ' + hora + ':00 - ' + fmtVal(val) + ' - ' + fr;
+        drillHeatmapCelda(dia, hora);
+      }
+    });
+  });
+  // Leyenda
+  document.getElementById('legend-bar').innerHTML=
+    ['#F3F0FF','#C7B8E8','#9B7FD4','#0d2340','#4B2D7F']
+    .map(c=>`<div class="leg-cell" style="background:${c}"></div>`).join('');
+}
+
+// Clic en una celda del heatmap: antes solo actualizaba el textito de arriba
+// ("Clic para ver detalle" prometía esto pero nunca abría nada) — ahora abre
+// el mismo panel de detalle que ya usa "Tickets por cajero y día", filtrando
+// TICKETS_RAW (el mismo universo de datos que ya se pidió para el heatmap)
+// por día de la semana + hora de entrada, igual que construirDemanda().
+function drillHeatmapCelda(dia, hora) {
+  const ops = TICKETS_RAW.filter(t => {
+    if (!t.fecha_op || !t.hora_entrada) return false;
+    if (DIAS[fechaADiaIdx(t.fecha_op)] !== dia) return false;
+    return parseInt(String(t.hora_entrada).split(':')[0]) === hora;
+  });
+  const tipoLabel = {normal:'Normal',preferencial:'Preferencial',perdido:'Perdido',cortesia:'Cortesía',empleado:'Empleado',pension:'Pensión'};
+  document.getElementById('drill-title').textContent = `📍 ${dia} ${hora}:00 — ${ops.length} ticket${ops.length===1?'':'s'}`;
+  document.getElementById('drill-content').innerHTML = ops.length ? `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="border-bottom:2px solid var(--border)">
+        <th style="text-align:left;padding:7px">Folio</th><th style="text-align:left;padding:7px">Tipo</th>
+        <th style="text-align:left;padding:7px">Cajero</th><th style="text-align:left;padding:7px">Fecha</th>
+        <th style="text-align:left;padding:7px">Entrada</th><th style="text-align:left;padding:7px">Salida</th>
+        <th style="padding:7px;text-align:right">Importe</th>
+      </tr></thead>
+      <tbody>${ops.map(o=>`<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:7px"><span style="font-family:monospace;font-weight:700">${o.folio||'—'}</span></td>
+        <td style="padding:7px">${tipoLabel[o.tipo]||o.tipo||'—'}</td><td style="padding:7px">${o.cajero||'—'}</td>
+        <td style="padding:7px">${o.fecha_op}</td><td style="padding:7px">${o.hora_entrada||'—'}</td>
+        <td style="padding:7px">${o.hora_salida||'—'}</td>
+        <td style="padding:7px;text-align:right;font-weight:700;color:${o.importe?'var(--gold)':'var(--muted)'}">${fmtMoney(o.importe)}</td>
+      </tr>`).join('')}</tbody></table></div>` : '<div style="padding:20px;color:var(--muted)">Sin operaciones</div>';
+  document.getElementById('drill-panel').classList.add('open');
+}
+
+function tt(e,txt) {
+  const t=document.getElementById('tooltip');
+  t.textContent=txt;t.style.display='block';
+  t.style.left=(e.clientX+12)+'px';t.style.top=(e.clientY-36)+'px';
+}
+function ht(){document.getElementById('tooltip').style.display='none';}
+
+render();
+setInterval(render, 60000);
+</script>
+</body>
+</html>

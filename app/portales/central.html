@@ -158,7 +158,7 @@ nav { background:#fff; border-bottom:1px solid var(--border);
 .cajero-list-row { display:flex; align-items:center; gap:10px; padding:8px 0;
                     border-bottom:1px solid #eaeef4; font-size:13px; }
 .cajero-list-row .rol-badge { font-size:10px; font-weight:700; padding:2px 8px;
-                                border-radius:99px; background:#e6f2eb; color:var(--accent2); }
+                                border-radius:99px; background:#EFF6FF; color:var(--accent2); }
 .cajero-list-row .estado-inactivo { color:var(--red); font-size:11px; font-weight:700; }
 .drill-title { font-size:14px; font-weight:800; color:var(--accent); }
 .drill-path  { font-size:11px; color:var(--muted); margin-left:auto; }
@@ -174,8 +174,8 @@ td { padding:10px 14px; border-bottom:1px solid #eaeef4; }
 tr:hover td { background:#FAFAFE; cursor:pointer; }
 .badge { display:inline-block; padding:2px 8px; border-radius:4px;
          font-size:11px; font-weight:700; }
-.b-normal { background:#e6f2eb; color:#0d2340; }
-.b-pref   { background:#eef2f7; color:#0d2340; }
+.b-normal { background:#EFF6FF; color:#0d2340; }
+.b-pref   { background:#F3F0FF; color:#0d2340; }
 .b-perdido{ background:#FEE2E2; color:#D93025; }
 .b-cortesia{background:#F5F5F5; color:#6E6E73; }
 
@@ -264,14 +264,14 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
 </div>
 
 <nav>
-  <img src="../assets/logo.png" alt="ONLYPARK" style="height:32px;width:auto;display:block">
+  <span style="font-size:22px;font-weight:900;color:var(--accent)">·iwol·</span>
   <span class="nav-title">ONLYPARK</span>
   <span class="nav-badge">ADMIN PLAZA</span>
   <div class="nav-right">
     <span id="nav-usuario" style="font-size:12px;color:var(--accent);font-weight:700"></span>
     <span class="nav-plaza" id="nav-plaza">ONLYPARK</span>
     <span class="nav-clock" id="nav-clock">--:--:--</span>
-    <span id="app-version" style="font-size:11px;color:var(--muted);margin-right:8px">v184</span>
+    <span id="app-version" style="font-size:11px;color:var(--muted);margin-right:8px">v163</span>
     <div class="nav-menu-wrap">
       <button class="btn-refresh" style="background:var(--text)" onclick="toggleNavMenu(event)">☰ Menú</button>
       <div class="nav-menu-list" id="nav-menu-list">
@@ -282,7 +282,7 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
         <a class="nav-menu-item" href="ONLYPARK_Promo_Admin.html" target="_blank">📢 Promociones</a>
         <a class="nav-menu-item" href="pensiones.html" target="_blank">🅿️ Pensiones</a>
         <div class="nav-menu-sep"></div>
-        <a class="nav-menu-item" href="index.html">🏠 Portal principal</a>
+        <a class="nav-menu-item" href="ONLYPARK_Index.html">🏠 Portal principal</a>
       </div>
     </div>
     <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
@@ -318,7 +318,6 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
         <option value="sabado">Sábado</option>
         <option value="domingo">Domingo</option>
         <option value="semana">Esta semana</option>
-        <option value="semana_pasada">Semana pasada</option>
         <option value="mes">Este mes</option>
         <option value="custom">Personalizado</option>
       </select>
@@ -343,7 +342,7 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
       <div class="kpi-value" style="color:var(--accent)" id="kpi-tickets-dia">0</div>
       <div class="kpi-sub">total emitidos (abiertos + cerrados)</div>
     </div>
-    <div class="kpi-card" id="kpi-card-autos" onclick="drillDown('ocupacion')" title="Ver detalle" style="background:linear-gradient(135deg,#eef2f7,#e6f2eb)">
+    <div class="kpi-card" id="kpi-card-autos" onclick="drillDown('ocupacion')" title="Ver detalle" style="background:linear-gradient(135deg,#F3F0FF,#EFF6FF)">
       <div class="kpi-label">Autos en plaza AHORA</div>
       <div class="kpi-value" style="color:var(--accent);font-size:38px" id="kpi-ocupacion-num">0</div>
       <div class="kpi-sub" id="kpi-ocupacion-sub">de 0 lugares</div>
@@ -856,7 +855,7 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
       <option value="pension">Ordenar por pensionado</option>
     </select>
     <button onclick="toggleFiltrosAvanzadosMovAdmin()" id="btn-toggle-filtros-avanzados-adm"
-      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 12px;font-size:13px;background:#eef2f7;color:var(--accent);cursor:pointer;font-weight:700">▾ Más filtros</button>
+      style="border:1.5px solid var(--accent);border-radius:6px;padding:6px 12px;font-size:13px;background:#F3F0FF;color:var(--accent);cursor:pointer;font-weight:700">▾ Más filtros</button>
     <button onclick="limpiarFiltrosMovimientosAdmin()" title="Regresa todos los filtros a su valor por default"
       style="border:1.5px solid var(--border);border-radius:6px;padding:6px 12px;font-size:13px;background:#fff;color:var(--muted);cursor:pointer;font-weight:700">✕ Limpiar filtros</button>
   </div>
@@ -1180,7 +1179,7 @@ function renderHistoricoMensualAdm(mapa, anioAnterior, anioActual, mesActual) {
   const fmtVar = v => v == null ? '—' : `${v>0?'+':''}${v.toFixed(1)}%`;
   const colorVar = v => v == null ? 'var(--muted)' : (v >= 0 ? 'var(--green)' : 'var(--red)');
   const filaHtml = (label, anterior, actual, vPct, esTotal, destacar) => `
-    <tr style="${esTotal?'border-top:2px solid var(--border);font-weight:900':'border-bottom:1px solid var(--border)'}${destacar?';background:#eef2f7':''}">
+    <tr style="${esTotal?'border-top:2px solid var(--border);font-weight:900':'border-bottom:1px solid var(--border)'}${destacar?';background:#F3F0FF':''}">
       <td style="padding:7px">${label}</td>
       <td style="padding:7px;text-align:right">${anterior==null?'—':fmt(anterior)}</td>
       <td style="padding:7px;text-align:right">${actual==null?'—':fmt(actual)}</td>
@@ -1296,10 +1295,9 @@ function actualizarPeriodoLabel() {
   const DIA_IDX_LBL = { domingo:0, lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6 };
   if (p === 'hoy' || p in DIA_IDX_LBL) {
     el.textContent = capitalizarAdm(fmtFechaLargaAdm(desde));
-  } else if (p === 'semana' || p === 'semana_pasada') {
+  } else if (p === 'semana') {
     const d1 = new Date(desde+'T12:00:00'), d2 = new Date(hasta+'T12:00:00');
-    const prefijo = p === 'semana_pasada' ? 'Semana pasada — del ' : 'Semana del ';
-    el.textContent = `${prefijo}${d1.getDate()} al ${d2.getDate()} de ${MESES_LARGOS_ADM[d2.getMonth()]} de ${d2.getFullYear()}`;
+    el.textContent = `Semana del ${d1.getDate()} al ${d2.getDate()} de ${MESES_LARGOS_ADM[d2.getMonth()]} de ${d2.getFullYear()}`;
   } else if (p === 'mes') {
     const d = new Date(desde+'T12:00:00');
     el.textContent = capitalizarAdm(MESES_LARGOS_ADM[d.getMonth()]) + ' ' + d.getFullYear();
@@ -1334,14 +1332,6 @@ function getFechas() {
     // SIGUIENTE, no la actual) — (getDay()+6)%7 funciona los 7 días.
     const ini = new Date(hoy); ini.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
     return { desde: fmt(ini), hasta: fmt(hoy) };
-  }
-  if (p === 'semana_pasada') {
-    // Lunes a domingo de la semana ANTERIOR (no incluye hoy) — el lunes de
-    // esta semana menos 7 días, hasta el domingo de esa misma semana pasada.
-    const iniEstaSemana = new Date(hoy); iniEstaSemana.setDate(hoy.getDate() - ((hoy.getDay()+6)%7));
-    const iniPasada = new Date(iniEstaSemana); iniPasada.setDate(iniEstaSemana.getDate() - 7);
-    const finPasada = new Date(iniEstaSemana); finPasada.setDate(iniEstaSemana.getDate() - 1);
-    return { desde: fmt(iniPasada), hasta: fmt(finPasada) };
   }
   if (p === 'mes') {
     return { desde: fmt(new Date(hoy.getFullYear(),hoy.getMonth(),1)), hasta: fmt(hoy) };
@@ -2159,7 +2149,7 @@ function cerrarGestionManual() {
 
 // ══ AVISO A OPERADORES ══ — mensaje que el Admin manda a un operador
 // específico o a todos; se lo muestra la tablet la próxima vez que lo use
-// (ver revisarAvisosOperador() en operador.html). Pensado sobre todo
+// (ver revisarAvisosOperador() en ONLYPARK_TABLET.html). Pensado sobre todo
 // para pedirles "presiona Actualizar app" cuando hay una versión nueva,
 // pero sirve para cualquier mensaje corto.
 async function abrirAvisoOperador() {
@@ -2206,7 +2196,7 @@ function _beep() {
   } catch (e) {}
 }
 // Bandeja de preguntas que los cajeros mandan desde la tablet (botón
-// "❓ Preguntar" en operador.html, origen='cajero'). Al abrir el
+// "❓ Preguntar" en ONLYPARK_TABLET.html, origen='cajero'). Al abrir el
 // chat se listan y se marcan como leídas (leido_admin=true) — el badge
 // del menú refleja las que aún no se han abierto aquí.
 async function cargarPreguntasOperadores() {
@@ -2435,7 +2425,7 @@ function cerrarParametros() {
 
 // ══ TAB MOVIMIENTOS: buscador de soporte para el administrador — misma
 // lógica de filtros/columnas que el modal de Movimientos de la caseta
-// (operador.html), pero consultando un RANGO de fechas en vez de
+// (ONLYPARK_TABLET.html), pero consultando un RANGO de fechas en vez de
 // limitarse al día en curso, porque el admin necesita localizar folios de
 // cualquier día para atender quejas/incidencias. ══
 let MOV_ADM_INICIADO = false;
@@ -3304,9 +3294,9 @@ function showToast(msg) {
 // usar la app. Sesión válida mientras dure la pestaña (sessionStorage).
 // sha256Hex() ya está definida arriba (se usa también al crear operadores).
 function opUsuarioActual() {
-  try { return JSON.parse(sessionStorage.getItem('onlypark_usuario') || 'null'); } catch(e) { return null; }
+  try { return JSON.parse(sessionStorage.getItem('iwol_usuario') || 'null'); } catch(e) { return null; }
 }
-function cerrarSesion() { sessionStorage.removeItem('onlypark_usuario'); location.reload(); }
+function cerrarSesion() { sessionStorage.removeItem('iwol_usuario'); location.reload(); }
 
 let _opRolesPermitidos = [];
 let _opLoginResolve = null;
@@ -3345,7 +3335,7 @@ async function opIntentarLogin() {
       errEl.textContent = 'Tu usuario no tiene permiso para entrar aquí'; return;
     }
     const datosUsuario = { cajero_id: cajero.cajero_id, nombre: cajero.nombre, usuario: cajero.usuario, rol: cajero.rol };
-    sessionStorage.setItem('onlypark_usuario', JSON.stringify(datosUsuario));
+    sessionStorage.setItem('iwol_usuario', JSON.stringify(datosUsuario));
     document.getElementById('op-login-overlay').classList.add('hidden');
     document.getElementById('op-login-usuario').value = '';
     document.getElementById('op-login-password').value = '';

@@ -280,7 +280,7 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
         <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirEditorHistoricoAdm();">📊 Captura histórico mensual</button>
         <button class="nav-menu-item" onclick="cerrarNavMenu(); abrirAvisoOperador();">💬 Chat con operadores <span id="badge-preguntas-pendientes" style="display:none;background:#D93025;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:800;margin-left:6px">0</span></button>
         <a class="nav-menu-item" href="ONLYPARK_Promo_Admin.html" target="_blank">📢 Promociones</a>
-        <a class="nav-menu-item" href="ONLYPARK_Pensiones.html" target="_blank">🅿️ Pensiones</a>
+        <a class="nav-menu-item" href="pensiones.html" target="_blank">🅿️ Pensiones</a>
         <div class="nav-menu-sep"></div>
         <a class="nav-menu-item" href="index.html">🏠 Portal principal</a>
       </div>
@@ -530,7 +530,7 @@ tr:hover td { background:#FAFAFE; cursor:pointer; }
             <div style="flex:1;font-size:12.5px;color:var(--muted)">
               Captura y administra a los clientes con pensión activa.
             </div>
-            <a class="param-btn outline" href="ONLYPARK_Pensiones.html" target="_blank">Abrir Pensiones →</a>
+            <a class="param-btn outline" href="pensiones.html" target="_blank">Abrir Pensiones →</a>
           </div>
         </div>
 
@@ -2998,9 +2998,9 @@ function showTab(id, el) {
   const NOMBRE_PANTALLA = { movimientos:'Movimientos', bitacora:'Bitácora', demanda:'Demanda', 'cierre-admin':'Cierre administrativo' };
   if (NOMBRE_PANTALLA[id]) logBitacora('vista_pantalla', { pantalla: NOMBRE_PANTALLA[id] });
   if (id === 'demanda') {
-    // Carga perezosa: solo pide ONLYPARK_Demanda.html la primera vez que se abre la pestaña
+    // Carga perezosa: solo pide demanda.html la primera vez que se abre la pestaña
     const ifr = document.getElementById('iframe-demanda');
-    if (!ifr.src) ifr.src = 'ONLYPARK_Demanda.html';
+    if (!ifr.src) ifr.src = 'demanda.html';
   }
   if (id === 'movimientos' && !MOV_ADM_INICIADO) {
     MOV_ADM_INICIADO = true;

@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONLYPARK · Pensiones</title>
+<style>
+:root {
+  --bg:#F5F5F7; --white:#fff; --border:#D2D2D7;
+  --purple:#0d2340; --blue:#0d2340; --green:#3aa757;
+  --gold:#F5A623; --red:#D93025; --amber:#BA7517;
+  --text:#1D1D1F; --muted:#6E6E73;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+
+nav{background:#1D1D1F;padding:0 24px;height:52px;display:flex;align-items:center;
+    gap:12px;position:sticky;top:0;z-index:100}
+.nav-logo{font-size:20px;font-weight:900;color:#fff;letter-spacing:-1px}
+.nav-badge{font-size:10px;font-weight:700;background:var(--purple);color:#fff;border-radius:4px;padding:2px 8px}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.btn-nav{background:var(--purple);color:#fff;border:none;border-radius:7px;
+         padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
+
+.tabs{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 24px;gap:0}
+.tab{padding:13px 18px;font-size:13px;font-weight:600;color:var(--muted);
+     cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+
+.container{max-width:1300px;margin:0 auto;padding:20px 24px}
+
+.card{background:#fff;border-radius:12px;border:1px solid var(--border);
+      padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:14px}
+.card-title{font-size:13px;font-weight:800;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+
+/* SEMÁFORO CARDS */
+.semaforo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sem-card{background:#fff;border-radius:12px;border:1px solid var(--border);
+          padding:14px 16px;text-align:center;cursor:pointer;transition:transform .15s}
+.sem-card:hover{transform:translateY(-2px)}
+.sem-dot{width:14px;height:14px;border-radius:50%;margin:0 auto 8px;display:block}
+.sem-val{font-size:28px;font-weight:900;line-height:1;margin-bottom:3px}
+.sem-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+/* TABLA */
+.tabla-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f0f4f9;padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+   color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid #eaeef4;vertical-align:middle}
+tr:hover td{background:#FAFAFE}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+.b-verde{background:#DCFCE7;color:#166534}
+.b-amarillo{background:#FEF9C3;color:#854D0E}
+.b-rojo{background:#FEE2E2;color:#991B1B}
+.b-gris{background:#F5F5F5;color:#555}
+.b-azul{background:#EFF6FF;color:#1E40AF}
+.b-morado{background:#F3F0FF;color:#5B21B6}
+
+/* FORMULARIO */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.form-input,.form-select{border:1.5px solid var(--border);border-radius:8px;
+  padding:9px 12px;font-size:13px;background:#fff;color:var(--text);width:100%}
+.form-input:focus,.form-select:focus{outline:none;border-color:var(--purple)}
+
+.btn{border:none;border-radius:8px;font-size:13px;font-weight:700;padding:10px 20px;cursor:pointer}
+.btn-primary{background:var(--purple);color:#fff}
+.btn-success{background:var(--green);color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.btn-outline{background:#fff;color:var(--purple);border:1.5px solid var(--purple)}
+.btn-sm{padding:6px 12px;font-size:11px}
+
+/* HISTORIAL TARIFAS */
+.tarifa-row{display:flex;align-items:center;gap:10px;padding:10px 0;
+            border-bottom:1px solid #eaeef4}
+.tarifa-vigente{background:#DCFCE7;border-radius:4px;padding:2px 7px;
+                font-size:10px;font-weight:700;color:#166534}
+.tarifa-anterior{background:#F5F5F5;border-radius:4px;padding:2px 7px;
+                 font-size:10px;font-weight:700;color:#888}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:#00000066;display:none;
+               align-items:center;justify-content:center;z-index:999}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:95%;max-width:580px;
+       max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:16px;color:var(--purple)}
+
+/* SECCIÓN OCULTA */
+.tab-section{display:none}.tab-section.active{display:block}
+
+/* CONCILIACIÓN */
+.concilia-card{border:2px solid var(--border);border-radius:10px;padding:14px;
+               margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.concilia-card:hover{border-color:var(--purple)}
+.concilia-card.por-validar{border-color:var(--amber)}
+
+.toast{position:fixed;bottom:20px;right:20px;background:#1D1D1F;color:#fff;
+       border-radius:10px;padding:12px 18px;font-size:13px;z-index:9999;
+       transform:translateY(60px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* IMPRIMIR / PDF — solo se ve la pestaña activa (las demás ya son display:none) */
+@media print {
+  nav, .tabs, .toast, .modal-overlay, button { display:none !important; }
+  body { background:#fff; }
+  .container { max-width:100%; padding:0; }
+  .card { box-shadow:none; border:1px solid #ccc; break-inside:avoid; }
+  .semaforo-grid { break-inside:avoid; }
+}
+</style>
+  <script src="no-login.js"></script>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">·iwol·</span>
+  <span style="font-size:14px;font-weight:700;color:#fff">ONLYPARK</span>
+  <span class="nav-badge">PENSIONES</span>
+  <div class="nav-right">
+    <button class="btn-nav" onclick="abrirModalNuevaPension()">+ Nueva pensión</button>
+    <button class="btn-nav" style="background:none;border:1px solid #444" onclick="window.print()">🖨 Imprimir</button>
+    <span style="font-size:12px;color:#888" id="clock">--:--:--</span>
+    <span id="app-version" style="font-size:11px;color:#888;margin-left:8px">v184</span>
+  </div>
+</nav>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('semaforo',this)">🚦 Semáforo</div>
+  <div class="tab" onclick="showTab('cobranza',this)">💳 Cobranza del mes</div>
+  <div class="tab" onclick="showTab('pensionados',this)">👥 Pensionados</div>
+  <div class="tab" onclick="showTab('tarifas',this)">📋 Historial tarifas</div>
+</div>
+
+<div class="container">
+
+<!-- ══ SEMÁFORO ══ -->
+<div class="tab-section active" id="tab-semaforo">
+
+  <div class="semaforo-grid">
+    <div class="sem-card" onclick="filtrarSemaforo('al_corriente')">
+      <span class="sem-dot" style="background:#16A34A"></span>
+      <div class="sem-val" style="color:#16A34A" id="cnt-verde">0</div>
+      <div class="sem-label">Al corriente</div>
+    </div>
+    <div class="sem-card" onclick="filtrarSemaforo('por_vencer')">
+      <span class="sem-dot" style="background:#CA8A04"></span>
+      <div class="sem-val" style="color:#CA8A04" id="cnt-amarillo">0</div>
+      <div class="sem-label">Por vencer</div>
+    </div>
+    <div class="sem-card" onclick="filtrarSemaforo('vencido')">
+      <span class="sem-dot" style="background:#DC2626"></span>
+      <div class="sem-val" style="color:#DC2626" id="cnt-rojo">0</div>
+      <div class="sem-label">Vencido</div>
+    </div>
+    <div class="sem-card" onclick="filtrarSemaforo('todos')">
+      <span class="sem-dot" style="background:var(--purple)"></span>
+      <div class="sem-val" style="color:var(--purple)" id="cnt-total">0</div>
+      <div class="sem-label">Total activos</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="card-title" id="semaforo-titulo">Todos los pensionados activos</div>
+        <div class="card-sub">Clic en fila para ver detalle · Estado al día de hoy</div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-left:auto"
+              onclick="exportarPensionados()">⬇ Export</button>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr>
+          <th>Estado</th><th>Cliente</th><th>Vehículo</th><th>Placas</th>
+          <th>Tipo</th><th>Mensualidad</th><th>Día pago</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tabla-semaforo"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COBRANZA ══ -->
+<div class="tab-section" id="tab-cobranza">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div>
+        <div class="card-title">Cobranza del mes — <span id="mes-actual"></span></div>
+        <div class="card-sub">Cartera generada, pagos pendientes y al corriente</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="generarCarteraDelMes()">📋 Generar cartera del mes</button>
+    </div>
+
+    <!-- Sin cargo generado -->
+    <div style="margin-bottom:16px;margin-top:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px">
+        ⏳ Sin cargo generado este mes
+      </div>
+      <div id="lista-por-validar"></div>
+    </div>
+
+    <!-- Pendientes -->
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">
+        🔴 Pago pendiente
+      </div>
+      <div id="lista-pendientes"></div>
+    </div>
+
+    <!-- Al corriente -->
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">
+        ✅ Al corriente este mes
+      </div>
+      <div id="lista-corriente"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PENSIONADOS ══ -->
+<div class="tab-section" id="tab-pensionados">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="card-title">Registro de pensionados</div>
+        <div class="card-sub">Clientes con pensión activa o histórica</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto"
+              onclick="abrirModalNuevaPension()">+ Nueva pensión</button>
+    </div>
+    <div class="tabla-wrap">
+      <table>
+        <thead><tr>
+          <th>Cliente</th><th>Tel/WA</th><th>Vehículo</th><th>Tipo</th>
+          <th>Desde</th><th>Mensualidad</th><th>Estado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="tabla-pensionados"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HISTORIAL TARIFAS ══ -->
+<div class="tab-section" id="tab-tarifas">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div>
+        <div class="card-title">Historial de tarifas — SCD Type 2</div>
+        <div class="card-sub">Cada cambio queda registrado con su período de vigencia</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto"
+              onclick="abrirModalNuevaTarifa()">+ Cambiar tarifa</button>
+    </div>
+    <div id="historial-tarifas"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- MODAL NUEVA / EDITAR PENSIÓN -->
+<div class="modal-overlay" id="modal-pension">
+  <div class="modal">
+    <div class="modal-title" id="modal-pension-titulo">Nueva pensión</div>
+    <input type="hidden" id="p-pension-id">
+    <input type="hidden" id="p-cliente-id">
+    <input type="hidden" id="p-vehiculo-id">
+    <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">DATOS DEL CLIENTE</div>
+      <div class="form-grid" style="margin-bottom:8px">
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input class="form-input" id="p-nombre" placeholder="Juan García López">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de Local *</label>
+          <input class="form-input" id="p-local" placeholder="Ej. L-12">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:8px">
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input class="form-input" id="p-tel" placeholder="722 123 4567">
+        </div>
+        <div class="form-group">
+          <label class="form-label">WhatsApp</label>
+          <input class="form-input" id="p-wa" placeholder="722 123 4567">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="p-email" placeholder="juan@email.com">
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">DATOS DEL VEHÍCULO</div>
+      <div class="form-grid" style="margin-bottom:8px">
+        <div class="form-group">
+          <label class="form-label">Placas</label>
+          <input class="form-input" id="p-placas" placeholder="ABC-123-D">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <input class="form-input" id="p-color" placeholder="Blanco">
+        </div>
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Marca</label>
+          <input class="form-input" id="p-marca" placeholder="Nissan">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modelo</label>
+          <input class="form-input" id="p-modelo" placeholder="Versa">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Año</label>
+          <input class="form-input" id="p-anio" placeholder="2022" type="number">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label class="form-label">Número de serie</label>
+        <input class="form-input" id="p-serie" placeholder="3N1CN7AP7GL123456">
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">DATOS DE LA PENSIÓN</div>
+      <div class="form-grid" style="margin-bottom:8px">
+        <div class="form-group">
+          <label class="form-label">Tipo de pensión</label>
+          <select class="form-select" id="p-tipo" onchange="actualizarMonto()">
+            <option value="dia">Día (07:00–22:00) — $600/mes</option>
+            <option value="noche">Noche (22:00–07:00) — $400/mes</option>
+            <option value="24h">24 horas — $900/mes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mensualidad $ *</label>
+          <input class="form-input" id="p-monto" type="number" value="600">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Fecha inicio</label>
+          <input class="form-input" id="p-inicio" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Día de pago (1-28)</label>
+          <input class="form-input" id="p-dia-pago" type="number" min="1" max="28" value="1">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:8px">
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-select" id="p-estado">
+            <option value="activo">Activo</option>
+            <option value="suspendido">Suspendido</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <input class="form-input" id="p-notas" placeholder="Observaciones adicionales">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-pension')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPension()" id="btn-guardar-pension">Registrar pensión</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTORIAL DE PAGOS (por pensión) -->
+<div class="modal-overlay" id="modal-historial">
+  <div class="modal">
+    <div class="modal-title" id="historial-titulo">Historial de pagos</div>
+    <div id="historial-content"></div>
+    <button class="btn btn-outline" style="margin-top:16px;width:100%" onclick="cerrarModal('modal-historial')">Cerrar</button>
+  </div>
+</div>
+
+<!-- MODAL NUEVA TARIFA -->
+<div class="modal-overlay" id="modal-tarifa">
+  <div class="modal">
+    <div class="modal-title">Cambiar tarifa (SCD Type 2)</div>
+    <div style="background:#FEF9C3;border:1px solid #CA8A04;border-radius:8px;
+                padding:12px;margin-bottom:16px;font-size:12px;color:#854D0E">
+      ⚠ La tarifa anterior se cierra automáticamente. Queda guardada en el histórico para auditoría.
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">Concepto</label>
+      <select class="form-select" id="t-concepto">
+        <option value="pension_dia">Pensión día</option>
+        <option value="pension_noche">Pensión noche</option>
+        <option value="pension_24h">Pensión 24 horas</option>
+        <option value="normal">Tarifa normal (por hora)</option>
+        <option value="preferencial">Tarifa preferencial (por hora)</option>
+        <option value="perdido">Penalización boleto perdido</option>
+      </select>
+    </div>
+    <div class="form-grid" style="margin-bottom:12px">
+      <div class="form-group">
+        <label class="form-label">Nuevo monto $</label>
+        <input class="form-input" id="t-monto" type="number" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vigente desde</label>
+        <input class="form-input" id="t-desde" type="date">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Motivo del cambio</label>
+      <input class="form-input" id="t-motivo" placeholder="Ajuste inflación 2026, nueva política, etc.">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" onclick="cerrarModal('modal-tarifa')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarTarifa()">Registrar cambio de tarifa</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── SUPABASE ──
+const SUPABASE_URL = 'https://ixumzgorhuhftasgrmhg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4dW16Z29yaHVoZnRhc2dybWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NjY2NDQsImV4cCI6MjEwMTA0MjY0NH0.Zmz8nqDqanNdjLN5UrG0zPlc6THDWHeZkddS7ztO1GA';
+// El plaza_id real cambia según el ambiente (QA/Producción tienen bases
+// separadas) — antes estaba fijo en el código y no coincidía con la fila
+// real de dim_plaza en Producción, causando un error de foreign key al
+// registrar clientes/pensiones. Se carga dinámicamente al arrancar.
+let PLAZA_ID = null;
+async function cargarPlazaId() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/dim_plaza?select=plaza_id&limit=1`, { headers: SB_HEADERS });
+    const rows = r.ok ? await r.json() : [];
+    if (rows[0]) PLAZA_ID = rows[0].plaza_id;
+  } catch (e) {}
+}
+const SB_HEADERS = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+
+// Fecha local (no UTC) — toISOString() convierte a UTC, así que en la noche
+// (México, UTC-6) "hoy" se recorría al día siguiente en estos defaults.
+function fmtLocal(d) {
+  const p2 = n => String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+}
+
+// ══ CARTERA / COBRANZA MENSUAL (pagos_pension) ══
+// Cada pensión activa debe tener, cada mes, un cargo en pagos_pension
+// (periodo_mes/periodo_año) con fecha_limite = día DIAS_GRACIA_PENSION del
+// mes. Mientras no venza esa fecha y no esté "validado", se ve "por
+// vencer"; si vence sin haberse marcado como pagado, pasa a "vencido" y la
+// pensión misma se suspende automáticamente (revisarVencidosYSuspender) —
+// un admin puede darle más días desde "Extender plazo" o registrar el
+// pago directo, lo que reactiva la pensión.
+const DIAS_GRACIA_PENSION = 10;
+
+function periodoActual() {
+  const hoy = new Date();
+  return { mes: hoy.getMonth()+1, anio: hoy.getFullYear() };
+}
+function fechaLimitePeriodo(mes, anio) {
+  return fmtLocal(new Date(anio, mes-1, DIAS_GRACIA_PENSION));
+}
+
+let PAGOS_MES_ACTUAL = new Map(); // pension_id -> fila de pagos_pension del período actual
+
+async function cargarPagosMesActual() {
+  const {mes, anio} = periodoActual();
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension?periodo_mes=eq.${mes}&periodo_año=eq.${anio}&select=*`, { headers: SB_HEADERS });
+    const rows = r.ok ? await r.json() : [];
+    PAGOS_MES_ACTUAL = new Map(rows.map(p => [p.pension_id, p]));
+  } catch (e) { PAGOS_MES_ACTUAL = new Map(); }
+}
+
+// Semáforo real: se basa en el cargo del mes actual (o en pensiones.estado
+// si ya está suspendida/cancelada), no solo en el estado de la pensión.
+function calcularSemaforo(p) {
+  if (p.estado === 'cancelado') return 'inactiva';
+  if (p.estado === 'suspendido') return 'vencido';
+  const pago = PAGOS_MES_ACTUAL.get(p.id);
+  if (!pago) return 'por_vencer'; // todavía no se genera la cartera de este mes
+  if (pago.estado === 'validado') return 'al_corriente';
+  const hoy = fmtLocal(new Date());
+  if (pago.fecha_limite && pago.fecha_limite < hoy) return 'vencido';
+  return 'por_vencer';
+}
+
+// Corre cada vez que se cargan los pensionados: cualquier cargo pendiente
+// cuya fecha_limite ya pasó suspende la pensión sola, sin que un admin
+// tenga que revisarlo uno por uno.
+async function revisarVencidosYSuspender() {
+  const hoy = fmtLocal(new Date());
+  const aSuspender = PENSIONADOS.filter(p => {
+    if (p.estado !== 'activo') return false;
+    const pago = PAGOS_MES_ACTUAL.get(p.id);
+    return pago && pago.estado !== 'validado' && pago.fecha_limite && pago.fecha_limite < hoy;
+  });
+  if (!aSuspender.length) return;
+  for (const p of aSuspender) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${p.id}`, {
+        method: 'PATCH', headers: SB_HEADERS, body: JSON.stringify({ estado: 'suspendido' })
+      });
+      p.estado = 'suspendido';
+      p.semaforo = calcularSemaforo(p);
+    } catch (e) {}
+  }
+  showToast(`⚠ ${aSuspender.length} pensión(es) suspendida(s) automáticamente por falta de pago`);
+}
+
+let PENSIONADOS = [];
+
+async function cargarPensionados() {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pensiones?select=pension_id,tipo,monto_mensual,dia_pago,fecha_inicio,estado,codigo_acceso,clientes(cliente_id,nombre,numero_local,telefono,whatsapp,email),vehiculos(vehiculo_id,placas,marca,modelo,anio,color)&order=created_at.desc`, {
+      headers: SB_HEADERS
+    });
+    if (!r.ok) { showToast('⚠ Sin conexión a Supabase · mostrando vacío'); PENSIONADOS = []; return; }
+    const rows = await r.json();
+    await cargarPagosMesActual();
+    PENSIONADOS = rows.map(p => {
+      const base = {
+        id: p.pension_id,
+        cliente_id: p.clientes?.cliente_id || null,
+        vehiculo_id: p.vehiculos?.vehiculo_id || null,
+        nombre: p.clientes?.nombre || '—',
+        numero_local: p.clientes?.numero_local || '',
+        tel: p.clientes?.telefono || '',
+        wa: p.clientes?.whatsapp || '',
+        email: p.clientes?.email || '',
+        placas: p.vehiculos?.placas || '—',
+        marca: p.vehiculos?.marca || '',
+        modelo: p.vehiculos?.modelo || '',
+        anio: p.vehiculos?.anio || '',
+        color: p.vehiculos?.color || '',
+        tipo: p.tipo,
+        monto: Number(p.monto_mensual) || 0,
+        dia_pago: p.dia_pago,
+        inicio: p.fecha_inicio,
+        estado: p.estado,
+        codigo_acceso: p.codigo_acceso
+      };
+      const pago = PAGOS_MES_ACTUAL.get(p.pension_id);
+      base.ultimo_pago = pago && pago.fecha_pago ? pago.fecha_pago : '—';
+      base.semaforo = calcularSemaforo(base);
+      return base;
+    });
+    await revisarVencidosYSuspender();
+  } catch (e) {
+    showToast('⚠ Sin conexión a Supabase · mostrando vacío');
+    PENSIONADOS = [];
+  }
+}
+
+const TARIFAS_HIST = [
+  {concepto:'pension_24h', label:'Pensión 24h', monto:900,  desde:'2026-06-01', hasta:null,     motivo:'Ajuste tarifario 2026'},
+  {concepto:'pension_24h', label:'Pensión 24h', monto:800,  desde:'2026-01-01', hasta:'2026-05-31', motivo:'Tarifa inicial'},
+  {concepto:'pension_dia', label:'Pensión día', monto:600,  desde:'2026-01-01', hasta:null,     motivo:'Tarifa inicial'},
+  {concepto:'pension_noche',label:'Pensión noche',monto:400,desde:'2026-01-01', hasta:null,     motivo:'Tarifa inicial'},
+  {concepto:'normal',      label:'Por hora normal',monto:15,desde:'2026-01-01',hasta:null,      motivo:'Tarifa inicial'},
+  {concepto:'preferencial',label:'Por hora pref.', monto:6, desde:'2026-01-01',hasta:null,      motivo:'Tarifa inicial'},
+  {concepto:'perdido',     label:'Boleto perdido',monto:150,desde:'2026-01-01',hasta:null,      motivo:'Tarifa inicial'},
+];
+
+// ── CLOCK ──
+setInterval(()=>document.getElementById('clock').textContent=
+  new Date().toLocaleTimeString('es-MX'),1000);
+
+// ── TABS ──
+function showTab(id,el) {
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='semaforo')    renderSemaforo('todos');
+  if(id==='cobranza')    renderCobranza();
+  if(id==='pensionados') renderPensionados();
+  if(id==='tarifas')     renderTarifas();
+}
+
+// ── SEMÁFORO ──
+const SEM_LABEL = {al_corriente:'Al corriente',por_vencer:'Por vencer',vencido:'Vencido',inactiva:'Inactiva'};
+const SEM_BADGE = {al_corriente:'b-verde',por_vencer:'b-amarillo',vencido:'b-rojo',inactiva:'b-gris'};
+const SEM_DOT   = {al_corriente:'#16A34A',por_vencer:'#CA8A04',vencido:'#DC2626',inactiva:'#888'};
+const TIPO_LABEL = {dia:'Día 07–22',noche:'Noche 22–07','24h':'24 horas'};
+
+function renderSemaforo(filtro='todos') {
+  document.getElementById('cnt-verde').textContent   = PENSIONADOS.filter(p=>p.semaforo==='al_corriente').length;
+  document.getElementById('cnt-amarillo').textContent= PENSIONADOS.filter(p=>p.semaforo==='por_vencer').length;
+  document.getElementById('cnt-rojo').textContent    = PENSIONADOS.filter(p=>p.semaforo==='vencido').length;
+  document.getElementById('cnt-total').textContent   = PENSIONADOS.length;
+  const list = filtro==='todos' ? PENSIONADOS : PENSIONADOS.filter(p=>p.semaforo===filtro);
+  const titulos={todos:'Todos los pensionados activos',al_corriente:'✅ Al corriente',
+                 por_vencer:'🟡 Por vencer — pagar antes del día '+DIAS_GRACIA_PENSION,
+                 vencido:'🔴 Vencidos — requieren atención'};
+  document.getElementById('semaforo-titulo').textContent = titulos[filtro]||'Pensionados';
+  document.getElementById('tabla-semaforo').innerHTML = list.map(p=>`
+    <tr>
+      <td><span class="dot" style="background:${SEM_DOT[p.semaforo]}"></span>
+          <span class="badge ${SEM_BADGE[p.semaforo]}">${SEM_LABEL[p.semaforo]}</span></td>
+      <td><strong>${p.nombre}</strong><br><span style="font-size:11px;color:var(--muted)">${p.tel}</span></td>
+      <td>${p.marca} ${p.modelo} ${p.anio} · ${p.color}</td>
+      <td><strong>${p.placas}</strong></td>
+      <td><span class="badge b-morado">${TIPO_LABEL[p.tipo]}</span></td>
+      <td><strong>$${p.monto}/mes</strong><br><span style="font-size:11px;color:var(--muted)">Paga día ${p.dia_pago}</span></td>
+      <td>Último: ${p.ultimo_pago}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${p.semaforo==='vencido'||p.semaforo==='por_vencer'?`<button class="btn btn-danger btn-sm" onclick="registrarPago('${p.id}','${p.nombre}',${p.monto})">✓ Ya pagó</button>`:''}
+        ${p.semaforo==='vencido'?`<button class="btn btn-outline btn-sm" onclick="extenderPlazo('${p.id}','${p.nombre}')">🕒 Extender</button>`:''}
+        <button class="btn btn-outline btn-sm" onclick="verDetalle('${p.id}')">Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="abrirModalEditarPension('${p.id}')">Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="eliminarPension('${p.id}','${p.nombre}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filtrarSemaforo(f) { renderSemaforo(f); }
+
+// ── COBRANZA ──
+function renderCobranza() {
+  const mes = new Date().toLocaleString('es-MX',{month:'long',year:'numeric'});
+  document.getElementById('mes-actual').textContent = mes.charAt(0).toUpperCase()+mes.slice(1);
+
+  // Sin cargo generado todavía este mes — hay que correr "Generar cartera".
+  const sinCargo = PENSIONADOS.filter(p => p.estado==='activo' && !PAGOS_MES_ACTUAL.has(p.id));
+  const elSinCargo = document.getElementById('lista-por-validar');
+  if (elSinCargo) elSinCargo.innerHTML = sinCargo.length
+    ? sinCargo.map(p=>`
+      <div class="concilia-card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:13px">${p.nombre}</div>
+            <div style="font-size:11px;color:var(--muted)">${p.placas} · $${p.monto}/mes</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted)">Sin cargo generado</div>
+        </div>
+      </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px">Ya está generada la cartera de este mes para todas las pensiones activas</div>';
+
+  // Pendientes (por vencer o ya vencido)
+  const pendientes = PENSIONADOS.filter(p=>p.semaforo==='vencido'||p.semaforo==='por_vencer');
+  document.getElementById('lista-pendientes').innerHTML = pendientes.length
+    ? pendientes.map(p=>`
+    <div class="concilia-card">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="dot" style="background:${SEM_DOT[p.semaforo]}"></span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--muted)">${p.placas} · Límite: ${PAGOS_MES_ACTUAL.get(p.id)?.fecha_limite || '—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:900;color:var(--red)">$${p.monto}.00</div>
+          <div style="display:flex;gap:4px;margin-top:4px">
+            <button class="btn btn-outline btn-sm" onclick="registrarPago('${p.id}','${p.nombre}',${p.monto})">✓ Ya pagó</button>
+            ${p.semaforo==='vencido'?`<button class="btn btn-outline btn-sm" onclick="extenderPlazo('${p.id}','${p.nombre}')">🕒 Extender</button>`:''}
+          </div>
+        </div>
+      </div>
+    </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px">Nadie pendiente de pago este mes</div>';
+
+  // Al corriente
+  const corrientes = PENSIONADOS.filter(p=>p.semaforo==='al_corriente');
+  document.getElementById('lista-corriente').innerHTML = corrientes.length
+    ? corrientes.map(p=>`
+    <div class="concilia-card" style="border-color:#BBF7D0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="dot" style="background:#16A34A"></span>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--muted)">${p.placas}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--green)">✓ Pagado ${PAGOS_MES_ACTUAL.get(p.id)?.fecha_pago || ''}</div>
+      </div>
+    </div>`).join('')
+    : '<div style="color:var(--muted);font-size:13px;padding:8px">Nadie al corriente todavía este mes</div>';
+}
+
+// Crea el cargo del mes actual para cada pensión activa que aún no lo
+// tenga — "generar la cartera" es explícito (botón), no automático, para
+// que el admin decida cuándo arranca el cobro de cada mes.
+async function generarCarteraDelMes() {
+  const {mes, anio} = periodoActual();
+  const fechaLimite = fechaLimitePeriodo(mes, anio);
+  const activos = PENSIONADOS.filter(p => p.estado==='activo' && !PAGOS_MES_ACTUAL.has(p.id));
+  if (!activos.length) { showToast('Ya está generada la cartera de este mes'); return; }
+  const nuevos = activos.map(p => ({
+    pension_id: p.id, periodo_mes: mes, periodo_año: anio,
+    monto_tarifa: p.monto, estado: 'pendiente', fecha_limite: fechaLimite
+  }));
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension`, {
+      method: 'POST', headers: SB_HEADERS, body: JSON.stringify(nuevos)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    showToast(`✅ Cartera generada · ${nuevos.length} cobro(s) nuevo(s), vencen el ${fechaLimite}`);
+    await cargarPensionados();
+    renderSemaforo('todos'); renderCobranza();
+  } catch (e) { showToast('⚠ No se pudo generar la cartera: ' + e.message); }
+}
+
+// ── PENSIONADOS ──
+function renderPensionados() {
+  document.getElementById('tabla-pensionados').innerHTML = PENSIONADOS.map(p=>`
+    <tr>
+      <td><strong>${p.nombre}</strong></td>
+      <td>${p.tel}<br><span style="font-size:11px;color:var(--muted)">${p.wa?'WA: '+p.wa:''}</span></td>
+      <td>${p.marca} ${p.modelo} ${p.anio}<br><span style="font-size:11px;color:var(--muted)">${p.color}</span></td>
+      <td><span class="badge b-morado">${TIPO_LABEL[p.tipo]}</span></td>
+      <td>${p.inicio}</td>
+      <td><strong>$${p.monto}/mes</strong></td>
+      <td><span class="badge ${p.estado==='activo'?'b-verde':'b-rojo'}">${p.estado}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="verDetalle('${p.id}')">Ver</button>
+        <button class="btn btn-outline btn-sm" onclick="abrirModalEditarPension('${p.id}')">Editar</button>
+        ${p.estado==='activo'
+          ? `<button class="btn btn-danger btn-sm" onclick="cambiarEstadoPension('${p.id}','${p.nombre}','suspendido')">Suspender</button>`
+          : `<button class="btn btn-success btn-sm" onclick="cambiarEstadoPension('${p.id}','${p.nombre}','activo')">Reactivar</button>`}
+        <button class="btn btn-danger btn-sm" onclick="eliminarPension('${p.id}','${p.nombre}')">Eliminar</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ── TARIFAS SCD2 ──
+function renderTarifas() {
+  const conceptos = [...new Set(TARIFAS_HIST.map(t=>t.concepto))];
+  const el = document.getElementById('historial-tarifas');
+  el.innerHTML = conceptos.map(c=>{
+    const rows = TARIFAS_HIST.filter(t=>t.concepto===c).sort((a,b)=>b.desde.localeCompare(a.desde));
+    return `<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px">${rows[0].label}</div>
+      ${rows.map((r,i)=>`
+        <div class="tarifa-row">
+          <span>${i===0?`<span class="tarifa-vigente">VIGENTE</span>`:`<span class="tarifa-anterior">ANTERIOR</span>`}</span>
+          <span style="font-size:18px;font-weight:900;color:${i===0?'var(--green)':'var(--muted)'}">
+            $${r.monto.toFixed(2)}
+          </span>
+          <span style="font-size:12px;color:var(--muted);flex:1">
+            Desde ${r.desde}${r.hasta?' hasta '+r.hasta:' (vigente hoy)'}
+          </span>
+          <span style="font-size:11px;color:var(--muted)">${r.motivo}</span>
+        </div>`).join('')}
+    </div>`;
+  }).join('<hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">');
+}
+
+// ── MODALES ──
+function limpiarFormPension() {
+  ['p-nombre','p-local','p-tel','p-wa','p-email','p-placas','p-color',
+   'p-marca','p-modelo','p-anio','p-serie','p-notas','p-pension-id',
+   'p-cliente-id','p-vehiculo-id'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('p-monto').value = '600';
+  document.getElementById('p-dia-pago').value = '1';
+  document.getElementById('p-tipo').value = 'dia';
+  document.getElementById('p-estado').value = 'activo';
+}
+
+function abrirModalNuevaPension() {
+  limpiarFormPension();
+  document.getElementById('p-inicio').value = fmtLocal(new Date());
+  document.getElementById('modal-pension-titulo').textContent = 'Nueva pensión';
+  document.getElementById('btn-guardar-pension').textContent = 'Registrar pensión';
+  document.getElementById('modal-pension').classList.add('open');
+}
+
+// Mantenimiento: cargar los datos de una pensión existente en el mismo
+// formulario de alta, para poder corregir cliente/vehículo/monto/estado sin
+// tener que borrar y volver a capturar todo.
+function abrirModalEditarPension(id) {
+  const p = PENSIONADOS.find(x => x.id === id);
+  if (!p) return;
+  limpiarFormPension();
+  document.getElementById('p-pension-id').value  = p.id;
+  document.getElementById('p-cliente-id').value  = p.cliente_id || '';
+  document.getElementById('p-vehiculo-id').value = p.vehiculo_id || '';
+  document.getElementById('p-nombre').value = p.nombre === '—' ? '' : p.nombre;
+  document.getElementById('p-local').value  = p.numero_local || '';
+  document.getElementById('p-tel').value    = p.tel;
+  document.getElementById('p-wa').value     = p.wa;
+  document.getElementById('p-email').value  = p.email;
+  document.getElementById('p-placas').value = p.placas === '—' ? '' : p.placas;
+  document.getElementById('p-color').value  = p.color;
+  document.getElementById('p-marca').value  = p.marca;
+  document.getElementById('p-modelo').value = p.modelo;
+  document.getElementById('p-anio').value   = p.anio;
+  document.getElementById('p-tipo').value   = p.tipo;
+  document.getElementById('p-monto').value  = p.monto;
+  document.getElementById('p-inicio').value = p.inicio;
+  document.getElementById('p-dia-pago').value = p.dia_pago || 1;
+  document.getElementById('p-estado').value = p.estado || 'activo';
+  document.getElementById('modal-pension-titulo').textContent = 'Editar pensión — ' + p.nombre;
+  document.getElementById('btn-guardar-pension').textContent = 'Guardar cambios';
+  document.getElementById('modal-pension').classList.add('open');
+}
+
+function actualizarMonto() {
+  const montos = {dia:600,noche:400,'24h':900};
+  document.getElementById('p-monto').value = montos[document.getElementById('p-tipo').value]||600;
+}
+
+async function guardarPension() {
+  const pensionId  = document.getElementById('p-pension-id').value;
+  const clienteId  = document.getElementById('p-cliente-id').value;
+  const vehiculoId = document.getElementById('p-vehiculo-id').value;
+  const esEdicion  = !!pensionId;
+
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const local  = document.getElementById('p-local').value.trim();
+  const tel    = document.getElementById('p-tel').value.trim();
+  const wa     = document.getElementById('p-wa').value.trim();
+  const email  = document.getElementById('p-email').value.trim();
+  const placas = document.getElementById('p-placas').value.trim().toUpperCase();
+  const color  = document.getElementById('p-color').value.trim();
+  const marca  = document.getElementById('p-marca').value.trim();
+  const modelo = document.getElementById('p-modelo').value.trim();
+  const anio   = document.getElementById('p-anio').value;
+  const serie  = document.getElementById('p-serie').value.trim();
+  const tipo   = document.getElementById('p-tipo').value;
+  const monto  = parseFloat(document.getElementById('p-monto').value)||0;
+  // fecha_inicio es obligatoria a nivel base de datos (NOT NULL en
+  // pensiones), pero no queremos bloquear al cajero por olvidarla — si se
+  // deja vacía, se usa hoy por default en vez de mostrar un error.
+  const inicio = document.getElementById('p-inicio').value || fmtLocal(new Date());
+  const dia    = parseInt(document.getElementById('p-dia-pago').value)||1;
+  const estado = document.getElementById('p-estado').value;
+  const notas  = document.getElementById('p-notas').value.trim();
+
+  // Validaciones — solo Nombre y Número de Local son obligatorios; el resto
+  // (mensualidad incluida) queda opcional. Los datos del vehículo, si se
+  // captura alguno, se piden todos, porque vehiculos.placas/marca/modelo/
+  // color son NOT NULL en la base y no se puede guardar un registro a medias.
+  if (!nombre) { showToast('⚠ El nombre es obligatorio'); document.getElementById('p-nombre').focus(); return; }
+  if (!local)  { showToast('⚠ El número de local es obligatorio'); document.getElementById('p-local').focus(); return; }
+  const hayDatosVehiculo = placas || marca || modelo || color;
+  if (hayDatosVehiculo && !(placas && marca && modelo && color)) {
+    showToast('⚠ Si vas a registrar el vehículo, completa placas, marca, modelo y color');
+    return;
+  }
+
+  try {
+    if (esEdicion) {
+      // 1) Cliente — actualizar los datos existentes
+      const rCliente = await fetch(`${SUPABASE_URL}/rest/v1/clientes?cliente_id=eq.${clienteId}`, {
+        method: 'PATCH', headers: SB_HEADERS,
+        body: JSON.stringify({ nombre, numero_local: local, telefono: tel, whatsapp: wa, email: email || null })
+      });
+      if (!rCliente.ok) throw new Error(await rCliente.text());
+
+      // 2) Vehículo — actualizar si ya existía; crearlo si antes no había
+      // datos de vehículo y ahora sí se capturaron; no se toca si se deja vacío.
+      let vehiculoIdFinal = vehiculoId || null;
+      if (hayDatosVehiculo && vehiculoId) {
+        const rVeh = await fetch(`${SUPABASE_URL}/rest/v1/vehiculos?vehiculo_id=eq.${vehiculoId}`, {
+          method: 'PATCH', headers: SB_HEADERS,
+          body: JSON.stringify({ placas, marca, modelo, anio: anio ? parseInt(anio) : null, color, num_serie: serie || null })
+        });
+        if (!rVeh.ok) throw new Error(await rVeh.text());
+      } else if (hayDatosVehiculo && !vehiculoId) {
+        const rVeh = await fetch(`${SUPABASE_URL}/rest/v1/vehiculos`, {
+          method: 'POST', headers: {...SB_HEADERS, Prefer: 'return=representation'},
+          body: JSON.stringify({ cliente_id: clienteId, placas, marca, modelo,
+            anio: anio ? parseInt(anio) : null, color, num_serie: serie || null })
+        });
+        if (!rVeh.ok) throw new Error(await rVeh.text());
+        vehiculoIdFinal = (await rVeh.json())[0].vehiculo_id;
+      }
+
+      // 3) Pensión
+      const rPension = await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${pensionId}`, {
+        method: 'PATCH', headers: SB_HEADERS,
+        body: JSON.stringify({
+          vehiculo_id: vehiculoIdFinal, tipo, monto_mensual: monto,
+          fecha_inicio: inicio, dia_pago: dia, estado, notas: notas || null
+        })
+      });
+      if (!rPension.ok) throw new Error(await rPension.text());
+
+      cerrarModal('modal-pension');
+      showToast(`✅ Pensión actualizada · ${nombre}`);
+    } else {
+      // 1) Cliente
+      const rCliente = await fetch(`${SUPABASE_URL}/rest/v1/clientes`, {
+        method: 'POST', headers: {...SB_HEADERS, Prefer: 'return=representation'},
+        body: JSON.stringify({ plaza_id: PLAZA_ID, nombre, numero_local: local, telefono: tel, whatsapp: wa, email: email || null })
+      });
+      if (!rCliente.ok) throw new Error(await rCliente.text());
+      const cliente = (await rCliente.json())[0];
+
+      // 2) Vehículo — opcional, solo si se capturaron sus datos
+      let vehiculoId2 = null;
+      if (hayDatosVehiculo) {
+        const rVeh = await fetch(`${SUPABASE_URL}/rest/v1/vehiculos`, {
+          method: 'POST', headers: {...SB_HEADERS, Prefer: 'return=representation'},
+          body: JSON.stringify({ cliente_id: cliente.cliente_id, placas, marca, modelo,
+            anio: anio ? parseInt(anio) : null, color, num_serie: serie || null })
+        });
+        if (!rVeh.ok) throw new Error(await rVeh.text());
+        vehiculoId2 = (await rVeh.json())[0].vehiculo_id;
+      }
+
+      // 3) Pensión — código de acceso derivado del número de local (antes
+      // usaba las placas, que ahora pueden no existir)
+      const codigo = 'PEN-' + local.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+      const rPension = await fetch(`${SUPABASE_URL}/rest/v1/pensiones`, {
+        method: 'POST', headers: {...SB_HEADERS, Prefer: 'return=representation'},
+        body: JSON.stringify({
+          plaza_id: PLAZA_ID, cliente_id: cliente.cliente_id, vehiculo_id: vehiculoId2,
+          tipo, monto_mensual: monto, fecha_inicio: inicio, dia_pago: dia,
+          estado: 'activo', codigo_acceso: codigo, notas: notas || null
+        })
+      });
+      if (!rPension.ok) throw new Error(await rPension.text());
+
+      cerrarModal('modal-pension');
+      showToast(`✅ Pensión registrada · ${nombre} · ${placas} · código ${codigo}`);
+    }
+
+    limpiarFormPension();
+    await cargarPensionados();
+    renderSemaforo('todos');
+    renderPensionados();
+    renderCobranza();
+  } catch (e) {
+    showToast('⚠ Error al guardar en Supabase: ' + e.message);
+  }
+}
+
+// Cambiar estado (activo/suspendido/cancelado) sin abrir el modal completo —
+// antes el botón "Suspender" solo mostraba un toast y nunca tocaba la base.
+async function cambiarEstadoPension(id, nombre, nuevoEstado) {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${id}`, {
+      method: 'PATCH', headers: SB_HEADERS,
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    showToast(`✅ ${nombre} · estado cambiado a ${nuevoEstado}`);
+    await cargarPensionados();
+    renderSemaforo('todos');
+    renderPensionados();
+    renderCobranza();
+  } catch (e) {
+    showToast('⚠ Error al cambiar estado: ' + e.message);
+  }
+}
+
+// Eliminar por completo el registro de la pensión (no el cliente ni el
+// vehículo, que pueden seguir referenciados por tickets históricos) — se pide
+// confirmación porque es una acción destructiva y no tiene deshacer.
+async function eliminarPension(id, nombre) {
+  if (!confirm(`¿Eliminar la pensión de "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${id}`, {
+      method: 'DELETE', headers: SB_HEADERS
+    });
+    if (!r.ok) throw new Error(await r.text());
+    showToast(`🗑 Pensión de ${nombre} eliminada`);
+    await cargarPensionados();
+    renderSemaforo('todos');
+    renderPensionados();
+    renderCobranza();
+  } catch (e) {
+    showToast('⚠ Error al eliminar: ' + e.message);
+  }
+}
+
+// "Palomear" el pago del mes actual: no captura nada más, solo confirma
+// que ya se recibió (efectivo, entregado en persona) y lo marca validado.
+// Si la pensión estaba suspendida por falta de pago, se reactiva sola.
+async function registrarPago(id, nombre, monto) {
+  if (!confirm(`¿Confirmar que ${nombre} pagó $${monto} (efectivo) el día de hoy?`)) return;
+  const {mes, anio} = periodoActual();
+  const hoy = fmtLocal(new Date());
+  const pago = PAGOS_MES_ACTUAL.get(id);
+  try {
+    if (pago) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension?pago_id=eq.${pago.pago_id}`, {
+        method: 'PATCH', headers: SB_HEADERS,
+        body: JSON.stringify({ estado:'validado', fecha_pago:hoy, monto_pagado:monto, metodo_pago:'efectivo' })
+      });
+      if (!r.ok) throw new Error(await r.text());
+    } else {
+      // Sin cargo generado todavía este mes (no se corrió "Generar
+      // cartera") — se crea directo ya validado, para no bloquear al
+      // cajero por un paso administrativo que no le corresponde.
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension`, {
+        method: 'POST', headers: SB_HEADERS,
+        body: JSON.stringify({ pension_id:id, periodo_mes:mes, periodo_año:anio,
+          monto_tarifa:monto, monto_pagado:monto, estado:'validado', fecha_pago:hoy,
+          fecha_limite: fechaLimitePeriodo(mes,anio), metodo_pago:'efectivo' })
+      });
+      if (!r.ok) throw new Error(await r.text());
+    }
+    const p = PENSIONADOS.find(x=>x.id===id);
+    if (p && p.estado === 'suspendido') {
+      await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${id}`, {
+        method: 'PATCH', headers: SB_HEADERS, body: JSON.stringify({ estado:'activo' })
+      });
+    }
+    showToast(`✅ Pago registrado · ${nombre} al corriente`);
+    await cargarPensionados();
+    renderSemaforo('todos'); renderCobranza(); renderPensionados();
+  } catch (e) { showToast('⚠ Error al registrar el pago: ' + e.message); }
+}
+
+// Da más días de gracia al cargo del mes actual (criterio del admin) — si
+// la pensión ya estaba suspendida por esto, se reactiva al dar el plazo.
+async function extenderPlazo(id, nombre) {
+  const dias = prompt(`Extender plazo de pago de ${nombre}\n¿Cuántos días de gracia adicionales?`, '5');
+  const n = parseInt(dias, 10);
+  if (!n || n <= 0) return;
+  const pago = PAGOS_MES_ACTUAL.get(id);
+  if (!pago) { showToast('No hay un cobro generado este mes para extender'); return; }
+  const base = new Date(pago.fecha_limite+'T12:00:00');
+  base.setDate(base.getDate()+n);
+  const nuevaFecha = fmtLocal(base);
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension?pago_id=eq.${pago.pago_id}`, {
+      method: 'PATCH', headers: SB_HEADERS, body: JSON.stringify({ fecha_limite: nuevaFecha })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const p = PENSIONADOS.find(x=>x.id===id);
+    if (p && p.estado === 'suspendido') {
+      await fetch(`${SUPABASE_URL}/rest/v1/pensiones?pension_id=eq.${id}`, {
+        method: 'PATCH', headers: SB_HEADERS, body: JSON.stringify({ estado:'activo' })
+      });
+    }
+    showToast(`✅ Plazo extendido hasta ${nuevaFecha}`);
+    await cargarPensionados();
+    renderSemaforo('todos'); renderCobranza();
+  } catch (e) { showToast('⚠ Error al extender el plazo: ' + e.message); }
+}
+
+// Historial de pagos de una pensión — para consultar los meses ya
+// pagados, no solo el estatus del mes actual.
+const MESES_NOMBRE = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+async function verDetalle(id) {
+  const p = PENSIONADOS.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('historial-titulo').textContent = `Historial de pagos — ${p.nombre}`;
+  const cont = document.getElementById('historial-content');
+  cont.innerHTML = `
+    <div style="background:var(--bg);border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px">
+      <div><strong>${p.placas}</strong> · ${p.marca} ${p.modelo} · ${TIPO_LABEL[p.tipo]}</div>
+      <div style="margin-top:4px">Mensualidad: <strong>$${p.monto}</strong> · Estado actual:
+        <span class="badge ${SEM_BADGE[p.semaforo]}">${SEM_LABEL[p.semaforo]}</span></div>
+    </div>
+    <div id="historial-tabla-wrap" style="color:var(--muted);font-size:12px;padding:8px">Cargando historial...</div>`;
+  document.getElementById('modal-historial').classList.add('open');
+  const wrap = document.getElementById('historial-tabla-wrap');
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pagos_pension?pension_id=eq.${id}&select=*&order=periodo_año.desc,periodo_mes.desc`, { headers: SB_HEADERS });
+    const pagos = r.ok ? await r.json() : [];
+    const filas = pagos.length ? pagos.map(pg => `
+      <tr>
+        <td>${MESES_NOMBRE[pg.periodo_mes-1]} ${pg.periodo_año}</td>
+        <td>$${Number(pg.monto_tarifa).toFixed(2)}</td>
+        <td><span class="badge ${pg.estado==='validado'?'b-verde':(pg.fecha_limite && pg.fecha_limite < fmtLocal(new Date())?'b-rojo':'b-amarillo')}">${pg.estado==='validado'?'Pagado':(pg.fecha_limite && pg.fecha_limite < fmtLocal(new Date())?'Vencido':'Pendiente')}</span></td>
+        <td>${pg.fecha_pago || '—'}</td>
+      </tr>`).join('')
+      : '<tr><td colspan="4" style="color:var(--muted);text-align:center;padding:14px">Sin cargos registrados todavía</td></tr>';
+    wrap.outerHTML = `
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>Período</th><th>Monto</th><th>Estatus</th><th>Fecha de pago</th></tr></thead>
+          <tbody>${filas}</tbody>
+        </table>
+      </div>`;
+  } catch (e) {
+    wrap.textContent = 'No se pudo cargar el historial';
+    wrap.style.color = 'var(--red)';
+  }
+}
+
+function abrirModalNuevaTarifa() {
+  document.getElementById('t-desde').value = fmtLocal(new Date());
+  document.getElementById('modal-tarifa').classList.add('open');
+}
+
+function guardarTarifa() {
+  const c=document.getElementById('t-concepto').value;
+  const m=document.getElementById('t-monto').value;
+  const d=document.getElementById('t-desde').value;
+  const mot=document.getElementById('t-motivo').value;
+  if(!m||!d||!mot){showToast('Completa todos los campos');return;}
+  cerrarModal('modal-tarifa');
+  showToast(`Tarifa actualizada · ${c} = $${m} desde ${d}`);
+  renderTarifas();
+}
+
+function exportarPensionados() {
+  const csv='\uFEFF'+'Nombre,Tel,Placas,Marca,Modelo,Tipo,Monto,Estado\n'+
+    PENSIONADOS.map(p=>[p.nombre,p.tel,p.placas,p.marca,p.modelo,p.tipo,p.monto,p.semaforo].join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download='ONLYPARK_pensionados.csv'; a.click();
+  showToast('CSV exportado');
+}
+
+function cerrarModal(id){document.getElementById(id).classList.remove('open')}
+
+let _tt;
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;
+  t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2500)}
+
+// INIT
+const hoy=fmtLocal(new Date());
+(async () => { await cargarPlazaId(); await cargarPensionados(); renderSemaforo('todos'); })();
+</script>
+</body>
+</html>
