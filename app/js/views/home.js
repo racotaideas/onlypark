@@ -6,7 +6,7 @@ export async function renderHome(root) {
   root.innerHTML = `
     <header class="bg-marino text-white px-4 py-3 flex items-center justify-between shadow-md">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-lg bg-barrera flex items-center justify-center font-bold shadow-md">P</div>
+        <img src="/assets/logo.png" alt="ONLYPARK" class="h-8 w-auto bg-white rounded p-0.5" />
         <div class="leading-tight">
           <div class="font-semibold tracking-wide">ONLYPARK</div>
           <div class="text-xs text-white/60">Panel principal</div>

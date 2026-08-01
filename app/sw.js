@@ -1,7 +1,7 @@
 // Service Worker v5 — network-first (dev): siempre pide a la red y cachea la
 // respuesta. Cae a cache SOLO si la red falla. Evita el problema de servir
 // versiones viejas de JS despues de un deploy.
-const CACHE = 'onlypark-shell-v5';
+const CACHE = 'onlypark-shell-v6';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();

@@ -11,10 +11,9 @@ export function renderLogin(root) {
     <div class="flex-1 flex items-center justify-center px-4 py-12 bg-gradient-to-br from-marino via-marino-700 to-slate-900">
       <div class="w-full max-w-md">
         <div class="flex flex-col items-center mb-8">
-          <div class="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center mb-3 shadow-xl ring-1 ring-white/10">
-            <span class="text-white font-black text-4xl">P</span>
+          <div class="bg-white rounded-2xl p-4 mb-3 shadow-xl">
+            <img src="/assets/logo.png" alt="ONLYPARK" class="h-20 w-auto" />
           </div>
-          <h1 class="text-white text-3xl font-bold tracking-wide">ONLYPARK</h1>
           <p class="text-white/60 text-sm mt-1">Administracion inteligente de estacionamientos</p>
         </div>
 
