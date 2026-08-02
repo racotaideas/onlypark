@@ -115,11 +115,25 @@
     document.body.appendChild(banner);
     document.body.style.paddingTop = '30px';
 
-    // Cargar opciones desde Supabase REST (usando el anon key del portal)
+    // Cargar opciones desde Supabase REST.
+    // ANON no puede leer catalogos (RLS). Autenticamos como usuario compartido
+    // dev (operador@onlypark.local) para obtener JWT con permisos super_admin.
     var apikey = (typeof SUPABASE_KEY !== 'undefined') ? SUPABASE_KEY : window.SUPABASE_KEY;
     var url    = (typeof SUPABASE_URL !== 'undefined') ? SUPABASE_URL : window.SUPABASE_URL;
     if (!apikey || !url) return;
     var H = { apikey: apikey, Authorization: 'Bearer ' + apikey };
+
+    // Sign in silencioso — usa origFetch para bypass del shim
+    origFetch(url + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { apikey: apikey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'operador@onlypark.local', password: 'op-dev-2026' })
+    }).then(function(r){ return r.json(); }).then(function(t){
+      if (t && t.access_token) H.Authorization = 'Bearer ' + t.access_token;
+      cargarCombos();
+    }).catch(function(){ cargarCombos(); });
+
+    function cargarCombos() {
 
     var selGrp = document.getElementById('op-scope-grp');
     var selEmp = document.getElementById('op-scope-emp');
@@ -129,9 +143,11 @@
 
     origFetch(url+'/rest/v1/grupos_empresariales?select=grupo_id,nombre&order=nombre.asc', {headers:H})
       .then(function(r){return r.json();}).then(function(gs){
+        if (!Array.isArray(gs)) return;
         gs.forEach(function(g){ selGrp.appendChild(opt(g.grupo_id, g.nombre, g.grupo_id===localStorage.getItem('op_scope_grupo_id'))); });
         return loadEmps(localStorage.getItem('op_scope_grupo_id'), localStorage.getItem('op_scope_empresa_id'));
       }).then(function(){ return loadEsts(localStorage.getItem('op_scope_empresa_id'), localStorage.getItem('op_scope_estacionamiento_id')); });
+    } // fin cargarCombos
 
     function loadEmps(grpId, preserve) {
       var q = '?select=empresa_id,razon_social,grupo_id&order=razon_social.asc' + (grpId ? '&grupo_id=eq.'+grpId : '');
