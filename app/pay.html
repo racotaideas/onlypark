@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>ONLYPARK · Pagar</title>
+  <meta name="theme-color" content="#0d2340" />
+  <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      marino: { DEFAULT:'#0d2340', 700:'#153157' },
+      barrera:{ DEFAULT:'#3aa757', 700:'#278545' }
+    }}}};
+  </script>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-slate-100 to-slate-200 min-h-screen">
+  <div class="max-w-md mx-auto px-4 py-8">
+    <div class="flex flex-col items-center mb-6">
+      <img src="/assets/logo.png" alt="ONLYPARK" class="h-16 w-auto bg-white rounded-2xl p-2 shadow-lg" />
+      <h1 class="text-xl font-bold text-marino mt-3">Pago de estacionamiento</h1>
+    </div>
+
+    <div id="cont" class="bg-white rounded-2xl shadow-xl p-6">
+      <div class="text-center text-slate-500 text-sm py-8">Cargando ticket…</div>
+    </div>
+
+    <p class="text-center text-slate-400 text-xs mt-6">Powered by ONLYPARK · pago seguro</p>
+  </div>
+
+  <script type="module">
+    const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4dW16Z29yaHVoZnRhc2dybWhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0NjY2NDQsImV4cCI6MjEwMTA0MjY0NH0.Zmz8nqDqanNdjLN5UrG0zPlc6THDWHeZkddS7ztO1GA';
+    const URL = 'https://ixumzgorhuhftasgrmhg.supabase.co';
+    const H = { apikey: ANON, Authorization: 'Bearer '+ANON, 'Content-Type':'application/json' };
+
+    const token = new URLSearchParams(location.search).get('token');
+    const cont = document.getElementById('cont');
+
+    if (!token) {
+      cont.innerHTML = `<div class="text-red-600 text-center py-8">
+        Falta el token en la URL. Recibe el link del boleto de entrada.</div>`;
+    } else {
+      cargarTicket();
+      setInterval(cargarTicket, 30000);
+    }
+
+    async function cargarTicket() {
+      try {
+        const r = await fetch(URL+'/rest/v1/rpc/fn_obtener_ticket_por_token', {
+          method:'POST', headers:H, body: JSON.stringify({ p_token: token })
+        });
+        const [data] = await r.json();
+        if (!data) return renderNoEncontrado();
+        if (data.pagado) return renderPagado(data);
+        renderPendiente(data);
+      } catch (e) {
+        cont.innerHTML = `<div class="text-red-600 text-center py-4">Error: ${e.message}</div>`;
+      }
+    }
+
+    function renderPendiente(d) {
+      cont.innerHTML = `
+        <div class="text-center">
+          <div class="text-xs text-slate-500 uppercase tracking-wider">Folio</div>
+          <div class="font-mono text-lg font-bold text-marino">${d.folio_entrada}</div>
+          <div class="mt-4 text-xs text-slate-500 uppercase tracking-wider">Placa</div>
+          <div class="text-2xl font-bold text-marino tracking-widest">${d.placa_numero ?? '—'}</div>
+          <div class="mt-4 text-xs text-slate-500">${d.plaza_nombre ?? ''}</div>
+        </div>
+
+        <div class="my-6 border-t border-b border-slate-200 py-4 text-center">
+          <div class="text-xs text-slate-500 uppercase tracking-wider">Tiempo de estancia</div>
+          <div class="text-lg font-semibold text-marino">${d.minutos} minutos</div>
+          <div class="text-xs text-slate-500 mt-2">Entrada: ${new Date(d.entrada_at).toLocaleString()}</div>
+        </div>
+
+        <div class="text-center mb-6">
+          <div class="text-xs text-slate-500 uppercase tracking-wider">Total a pagar</div>
+          <div class="text-5xl font-bold text-barrera-700 mt-1">$${Number(d.importe ?? 0).toLocaleString()}</div>
+          <div class="text-xs text-slate-400 mt-1">MXN · IVA incluido</div>
+        </div>
+
+        <button id="btn-pagar" class="w-full bg-barrera hover:bg-barrera-700 text-white text-lg font-bold rounded-xl py-4 shadow-lg active:scale-98 transition-transform">
+          Pagar $${Number(d.importe ?? 0).toLocaleString()}
+        </button>
+
+        <div class="grid grid-cols-3 gap-2 mt-4 text-center text-[10px] text-slate-400">
+          <div>💳<br>Tarjeta</div><div>📱<br>Wallet</div><div>🏦<br>SPEI</div>
+        </div>
+
+        <p id="msg" class="mt-4 text-sm text-center min-h-[1.25rem]"></p>`;
+
+      document.getElementById('btn-pagar').addEventListener('click', async () => {
+        const btn = document.getElementById('btn-pagar');
+        const msg = document.getElementById('msg');
+        btn.disabled = true; btn.classList.add('opacity-60','cursor-wait');
+        btn.textContent = 'Procesando…';
+        msg.textContent = '';
+
+        // En prod: aquí abriría Stripe Checkout / Conekta / MercadoPago
+        // Dev: simulamos 1.5s de "cobro" exitoso
+        await new Promise(r => setTimeout(r, 1500));
+
+        try {
+          const r = await fetch(URL+'/rest/v1/rpc/fn_confirmar_pago_token', {
+            method:'POST', headers:H,
+            body: JSON.stringify({ p_token: token, p_metodo_codigo:'link_pago', p_referencia:'DEMO-'+Date.now() })
+          });
+          const [res] = await r.json();
+          if (res?.pagado_at) { await cargarTicket(); }
+          else { throw new Error(res?.mensaje || 'Error al pagar'); }
+        } catch (e) {
+          btn.disabled = false; btn.classList.remove('opacity-60','cursor-wait');
+          btn.textContent = 'Reintentar pago';
+          msg.className = 'mt-4 text-sm text-center text-red-600';
+          msg.textContent = e.message;
+        }
+      });
+    }
+
+    function renderPagado(d) {
+      cont.innerHTML = `
+        <div class="text-center">
+          <div class="w-20 h-20 rounded-full bg-barrera/10 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-12 h-12 text-barrera-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h2 class="text-2xl font-bold text-barrera-700">Pago confirmado</h2>
+          <div class="mt-1 text-sm text-slate-500">Puedes salir de ${d.plaza_nombre ?? 'la plaza'}</div>
+        </div>
+        <div class="mt-6 space-y-2 text-sm">
+          <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Folio</span><span class="font-mono">${d.folio_entrada}</span></div>
+          <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Placa</span><span class="font-bold tracking-widest">${d.placa_numero ?? '—'}</span></div>
+          <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Pagado</span><span>${new Date(d.pagado_at).toLocaleString()}</span></div>
+          <div class="flex justify-between py-2"><span class="text-slate-500">Total</span><span class="font-bold text-marino">$${Number(d.importe).toLocaleString()}</span></div>
+        </div>
+        <div class="mt-6 p-3 bg-slate-50 rounded-lg text-xs text-slate-600 text-center">
+          🚗 Al llegar a la salida, la cámara leerá tu placa y la pluma se abrirá automáticamente.
+        </div>`;
+    }
+
+    function renderNoEncontrado() {
+      cont.innerHTML = `<div class="text-center py-8">
+        <div class="text-4xl">⚠️</div>
+        <div class="mt-2 font-semibold text-marino">Ticket no encontrado</div>
+        <div class="text-sm text-slate-500 mt-1">El link expiró o el token es inválido.</div>
+      </div>`;
+    }
+  </script>
+</body>
+</html>

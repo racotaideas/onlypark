@@ -58,6 +58,8 @@ export async function renderHome(root) {
           ${modulo('#/parametros','Parámetros','⚙️','Tarifas y config por plaza',false)}
           ${modulo('#/empleados','Empleados','👥','Personal con cortesía',false)}
           ${modulo('#/usuarios','Usuarios','🔑','Cajeros y admins del sistema',false)}
+          ${modulo('#/lpr','LPR + QR pago','🚗','Entrada/salida por placa',false)}
+          ${modulo('#/supervisor','Supervisor móvil','📱','Tablero rápido',false)}
           ${modulo('#/supervisor','Supervisor móvil','📱','Vista responsive para tablet/celular',false)}
           ${modulo('#/camara','Cámara','📸','Captura de fotos (placa, incidencia)',false)}
         </div>

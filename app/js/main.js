@@ -12,6 +12,7 @@ import { renderEmpleados } from './views/empleados.js?v=2';
 import { renderUsuarios }  from './views/usuarios.js?v=2';
 import { renderSupervisor } from './views/supervisor.js?v=1';
 import { renderCamara }    from './views/camara.js?v=1';
+import { renderLpr }       from './views/lpr.js?v=1';
 import { renderNotFound }  from './views/notfound.js?v=5';
 
 const app = document.getElementById('app');
@@ -47,6 +48,7 @@ async function router() {
     case '/usuarios':   return renderUsuarios(app);
     case '/supervisor': return renderSupervisor(app);
     case '/camara':     return renderCamara(app);
+    case '/lpr':        return renderLpr(app);
     default:            return renderNotFound(app, path);
   }
 }
